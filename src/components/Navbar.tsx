@@ -9,8 +9,11 @@ import {
   NavigationMenuList,
 } from "@/components/ui/navigation-menu"
 import { motion } from "framer-motion"
+import { useUser, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs"
 
 export default function Navbar() {
+  const user = useUser()
+
   return (
     <motion.div 
       initial={{ y: -100, opacity: 0 }}
@@ -52,16 +55,33 @@ export default function Navbar() {
 
             {/* CTA Buttons */}
             <div className="flex items-center space-x-3">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button variant="outline" className="hidden sm:inline-flex rounded-full border-[#7C3AED] text-[#7C3AED] hover:bg-[#7C3AED]/10">
-                  Get a Demo
-                </Button>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-full shadow-lg shadow-[#7C3AED]/25">
-                  Try For Free
-                </Button>
-              </motion.div>
+              {!user?.isSignedIn ? (
+                <>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <SignInButton redirectUrl="/studio">
+                      <Button variant="outline" className="hidden sm:inline-flex rounded-full border-[#7C3AED] text-[#7C3AED] hover:bg-[#7C3AED]/10">
+                        Sign In
+                      </Button>
+                    </SignInButton>
+                  </motion.div>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <SignUpButton redirectUrl="/studio">
+                      <Button className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-full shadow-lg shadow-[#7C3AED]/25">
+                        Sign Up
+                      </Button>
+                    </SignUpButton>
+                  </motion.div>
+                </>
+              ) : (
+                <UserButton 
+                  afterSignOutUrl="/"
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-10 h-10 rounded-full",
+                    }
+                  }}
+                />
+              )}
             </div>
           </nav>
         </div>
