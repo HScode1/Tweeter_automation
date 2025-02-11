@@ -6,6 +6,7 @@ import { CTA } from "@/components/CTA";
 import { Testimonials } from "@/components/Testimonials";
 import { SchemaSection } from "@/components/SchemaSection"; 
 import { TrustSection } from "@/components/TrustSection";
+import  StatsSection from "@/components/StatsSection"
 
 const faqItems = [
   {
@@ -34,6 +35,7 @@ export default function Home() {
         <main className="container mx-auto px-4 py-16">
         </main>
         {/* <TrustSection /> */}
+        <StatsSection />
         <SchemaSection />
         <Testimonials />
         

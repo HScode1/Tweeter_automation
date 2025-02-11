@@ -58,14 +58,14 @@ export default function Navbar() {
               {!user?.isSignedIn ? (
                 <>
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <SignInButton redirectUrl="/studio">
+                    <SignInButton  fallbackRedirectUrl="/studio">
                       <Button variant="outline" className="hidden sm:inline-flex rounded-full border-[#7C3AED] text-[#7C3AED] hover:bg-[#7C3AED]/10">
                         Sign In
                       </Button>
                     </SignInButton>
                   </motion.div>
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <SignUpButton redirectUrl="/studio">
+                    <SignUpButton  fallbackRedirectUrl="/studio">
                       <Button className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-full shadow-lg shadow-[#7C3AED]/25">
                         Sign Up
                       </Button>

@@ -21,7 +21,7 @@ export function Sidebar({ className }: SidebarProps) {
         {/* User Profile Section */}
         <div className="px-4 py-2">
           {!user ? (
-            <SignInButton redirectUrl="/studio">
+            <SignInButton fallbackRedirectUrl="/studio">
               <Button className="w-full justify-start gap-2" variant="default">
                 Sign In
               </Button>
@@ -42,10 +42,12 @@ export function Sidebar({ className }: SidebarProps) {
                   <p className="text-xs text-gray-500">{user.primaryEmailAddress?.emailAddress}</p>
                 </div>
               </div>
-              <Button className="w-full justify-start gap-2" variant="default">
-                <Plus size={20} />
-                Create post
-              </Button>
+              <Link href="/studio/create" passHref>
+                <Button className="w-full justify-start gap-2" variant="default">
+                  <Plus size={20} />
+                  Create post
+                </Button>
+              </Link>
             </div>
           )}
         </div>
@@ -56,22 +58,30 @@ export function Sidebar({ className }: SidebarProps) {
           <div className="space-y-1">
             {user && (
               <>
-                <Button variant="ghost" className="w-full justify-start gap-2">
-                  <FileText size={20} />
-                  New post
-                </Button>
-                <Button variant="ghost" className="w-full justify-start gap-2">
-                  <Clock size={20} />
-                  Scheduled
-                </Button>
-                <Button variant="ghost" className="w-full justify-start gap-2">
-                  <Layout size={20} />
-                  Posts
-                </Button>
-                <Button variant="ghost" className="w-full justify-start gap-2">
-                  <Layout size={20} />
-                  Studio
-                </Button>
+                <Link href="/studio/new" passHref>
+                  <Button variant="ghost" className="w-full justify-start gap-2">
+                    <FileText size={20} />
+                    New post
+                  </Button>
+                </Link>
+                <Link href="/schedule" passHref>
+                  <Button variant="ghost" className="w-full justify-start gap-2" >
+                    <Clock size={20} />
+                    Scheduled
+                  </Button>
+                </Link>
+                <Link href="/studio/posts" passHref>
+                  <Button variant="ghost" className="w-full justify-start gap-2">
+                    <Layout size={20} />
+                    Posts
+                  </Button>
+                </Link>
+                <Link href="/studio" passHref>
+                  <Button variant="ghost" className="w-full justify-start gap-2">
+                    <Layout size={20} />
+                    Studio
+                  </Button>
+                </Link>
               </>
             )}
           </div>
@@ -83,14 +93,18 @@ export function Sidebar({ className }: SidebarProps) {
           <div className="space-y-1">
             {user && (
               <>
-                <Button variant="ghost" className="w-full justify-start gap-2">
-                  <Users size={20} />
-                  Accounts
-                </Button>
-                <Button variant="ghost" className="w-full justify-start gap-2">
-                  <Settings size={20} />
-                  Settings
-                </Button>
+                <Link href="/accounts" passHref>
+                  <Button variant="ghost" className="w-full justify-start gap-2" >
+                    <Users size={20} />
+                    Accounts
+                  </Button>
+                </Link>
+                <Link href="/settings" passHref>
+                  <Button variant="ghost" className="w-full justify-start gap-2">
+                    <Settings size={20} />
+                    Settings
+                  </Button>
+                </Link>
               </>
             )}
           </div>
