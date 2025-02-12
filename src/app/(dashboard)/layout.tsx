@@ -9,7 +9,12 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+        signInFallbackRedirectUrl="/studio"
+        signUpFallbackRedirectUrl="/studio"
+        signInForceRedirectUrl="/studio"  // Si vous voulez forcer la redirection
+        signUpForceRedirectUrl="/studio"  // Si vous voulez forcer la redirection
+      >
       <div className="flex min-h-screen">
         <Sidebar className="w-64 border-r" />
         <main className="flex-1 p-8">{children}</main>
