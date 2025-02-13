@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 // Use createRouteMatcher to define protected routes more explicitly
 const isProtectedRoute = createRouteMatcher([
   '/accounts',
-  '/dashbord', // Note: "dashbord" is likely a typo and should be "dashboard" if you intend that route
+  '/dashboard', // Note: "dashbord" is likely a typo and should be "dashboard" if you intend that route
   '/pricing',
   '/schedule',
   '/studio',
