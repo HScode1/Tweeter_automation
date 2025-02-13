@@ -24,12 +24,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    <ClerkProvider
+    signInFallbackRedirectUrl="/studio"
+    signUpFallbackRedirectUrl="/studio"
+    signInForceRedirectUrl="/studio"  // Si vous voulez forcer la redirection
+    signUpForceRedirectUrl="/studio"  // Si vous voulez for
+  >
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ClerkProvider>{children}</ClerkProvider>
+        {children}
       </body>
     </html>
+  </ClerkProvider>
   );
 }

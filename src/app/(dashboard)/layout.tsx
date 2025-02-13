@@ -10,10 +10,6 @@ export default function DashboardLayout({
 }) {
   return (
     <ClerkProvider
-        signInFallbackRedirectUrl="/studio"
-        signUpFallbackRedirectUrl="/studio"
-        signInForceRedirectUrl="/studio"  // Si vous voulez forcer la redirection
-        signUpForceRedirectUrl="/studio"  // Si vous voulez forcer la redirection
       >
       <div className="flex min-h-screen">
         <Sidebar className="w-64 border-r" />

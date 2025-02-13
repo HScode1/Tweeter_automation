@@ -5,7 +5,7 @@ import FAQ from "@/components/FAQ";
 import { CTA } from "@/components/CTA";
 import { Testimonials } from "@/components/Testimonials";
 import { SchemaSection } from "@/components/SchemaSection"; 
-import { TrustSection } from "@/components/TrustSection";
+import  TrustSection  from "@/components/TrustSection";
 import  StatsSection from "@/components/StatsSection"
 
 const faqItems = [
@@ -34,7 +34,7 @@ export default function Home() {
       <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
         <main className="container mx-auto px-4 py-16">
         </main>
-        {/* <TrustSection /> */}
+        <TrustSection />
         <StatsSection />
         <SchemaSection />
         <Testimonials />
