@@ -150,32 +150,31 @@ export default function AccountsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gradient-to-b from-[#F8F7FF] to-white p-6">
+    <div className="max-w-7xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Comptes connectés</h1>
-        <p className="text-muted-foreground">
-          Gérez vos comptes de réseaux sociaux connectés
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-[#6C5CE7] to-[#8E7CF8] bg-clip-text text-transparent">
+          Comptes connectés
+        </h1>
+        <p className="text-zinc-500">Gérez vos comptes de réseaux sociaux connectés</p>
       </div>
 
-      <Alert>
-        <AlertDescription>
+      <Alert className="border-[#6C5CE7] bg-[#6C5CE7]/10">
+        <AlertDescription className="text-[#6C5CE7]">
           Connectez vos comptes de réseaux sociaux pour commencer à publier du contenu automatiquement.
         </AlertDescription>
       </Alert>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {accounts.map((account) => (
-          <Card key={account.id} className="overflow-hidden">
+          <Card key={account.id} className="overflow-hidden border-0 shadow-lg transition-shadow hover:shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="flex items-center space-x-2">
                 {getPlatformIcon(account.platform)}
-                <CardTitle className="text-sm font-medium">
-                  {getPlatformName(account.platform)}
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">{getPlatformName(account.platform)}</CardTitle>
               </div>
               {account.isConnected && (
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="bg-[#6C5CE7] text-white text-xs">
                   Connecté
                 </Badge>
               )}
@@ -184,7 +183,7 @@ export default function AccountsPage() {
               {account.isConnected ? (
                 <div className="flex items-center space-x-4">
                   <img
-                    src={account.profileImage}
+                    src={account.profileImage || "/placeholder.svg"}
                     alt={`${account.username} avatar`}
                     className="h-10 w-10 rounded-full"
                   />
@@ -203,7 +202,7 @@ export default function AccountsPage() {
               ) : (
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className="w-full border-[#6C5CE7] text-[#6C5CE7] hover:bg-[#6C5CE7]/10"
                   onClick={() => handleConnect(account.platform)}
                 >
                   Connecter {getPlatformName(account.platform)}
@@ -214,5 +213,6 @@ export default function AccountsPage() {
         ))}
       </div>
     </div>
+  </div>
   );
 }

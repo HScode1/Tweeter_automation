@@ -1,28 +1,34 @@
-'use client'
+"use client"
+
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Plus, FileText, Clock, Layout, Settings, Users } from "lucide-react"
 import { useUser, SignInButton, UserButton } from "@clerk/nextjs"
+import type React from "react" // Import React
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function Sidebar({ className }: SidebarProps) {
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded } = useUser()
 
   if (!isLoaded) {
-    return null;
+    return null
   }
 
   return (
-    <div className={cn("pb-12 min-h-screen", className)}>
+    <div
+      className={cn(
+        "pb-12 min-h-screen bg-gradient-to-b from-[#F8F7FF] to-white border-r border-[#6C5CE7]/10",
+        className,
+      )}
+    >
       <div className="space-y-4 py-4">
         {/* User Profile Section */}
         <div className="px-4 py-2">
           {!user ? (
             <SignInButton fallbackRedirectUrl="/studio">
-              <Button className="w-full justify-start gap-2" variant="default">
+              <Button className="w-full justify-start gap-2 bg-[#6C5CE7] hover:bg-[#6C5CE7]/90 text-white transition-colors">
                 Sign In
               </Button>
             </SignInButton>
@@ -33,17 +39,17 @@ export function Sidebar({ className }: SidebarProps) {
                   afterSignOutUrl="/"
                   appearance={{
                     elements: {
-                      avatarBox: "w-10 h-10 rounded-full",
-                    }
+                      avatarBox: "w-10 h-10 rounded-full ring-2 ring-[#6C5CE7]/20",
+                    },
                   }}
                 />
                 <div className="flex flex-col">
-                  <p className="text-sm font-medium">{user.fullName || 'User'}</p>
-                  <p className="text-xs text-gray-500">{user.primaryEmailAddress?.emailAddress}</p>
+                  <p className="text-sm font-medium text-[#6C5CE7]">{user.fullName || "User"}</p>
+                  <p className="text-xs text-zinc-500">{user.primaryEmailAddress?.emailAddress}</p>
                 </div>
               </div>
               <Link href="/studio/create" passHref>
-                <Button className="w-full justify-start gap-2" variant="default">
+                <Button className="w-full justify-start gap-2 bg-gradient-to-r from-[#6C5CE7] to-[#8E7CF8] text-white hover:opacity-90 transition-opacity">
                   <Plus size={20} />
                   Create post
                 </Button>
@@ -52,32 +58,44 @@ export function Sidebar({ className }: SidebarProps) {
           )}
         </div>
         <div className="px-3">
-          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
+          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight bg-gradient-to-r from-[#6C5CE7] to-[#8E7CF8] bg-clip-text text-transparent">
             Content
           </h2>
           <div className="space-y-1">
             {user && (
               <>
                 <Link href="/studio/new" passHref>
-                  <Button variant="ghost" className="w-full justify-start gap-2">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2 text-zinc-600 hover:text-[#6C5CE7] hover:bg-[#6C5CE7]/10 transition-colors"
+                  >
                     <FileText size={20} />
                     New post
                   </Button>
                 </Link>
                 <Link href="/schedule" passHref>
-                  <Button variant="ghost" className="w-full justify-start gap-2" >
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2 text-zinc-600 hover:text-[#6C5CE7] hover:bg-[#6C5CE7]/10 transition-colors"
+                  >
                     <Clock size={20} />
                     Scheduled
                   </Button>
                 </Link>
                 <Link href="/studio/posts" passHref>
-                  <Button variant="ghost" className="w-full justify-start gap-2">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2 text-zinc-600 hover:text-[#6C5CE7] hover:bg-[#6C5CE7]/10 transition-colors"
+                  >
                     <Layout size={20} />
                     Posts
                   </Button>
                 </Link>
                 <Link href="/studio" passHref>
-                  <Button variant="ghost" className="w-full justify-start gap-2">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2 text-zinc-600 hover:text-[#6C5CE7] hover:bg-[#6C5CE7]/10 transition-colors"
+                  >
                     <Layout size={20} />
                     Studio
                   </Button>
@@ -87,20 +105,26 @@ export function Sidebar({ className }: SidebarProps) {
           </div>
         </div>
         <div className="px-3">
-          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
+          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight bg-gradient-to-r from-[#6C5CE7] to-[#8E7CF8] bg-clip-text text-transparent">
             Configuration
           </h2>
           <div className="space-y-1">
             {user && (
               <>
                 <Link href="/accounts" passHref>
-                  <Button variant="ghost" className="w-full justify-start gap-2" >
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2 text-zinc-600 hover:text-[#6C5CE7] hover:bg-[#6C5CE7]/10 transition-colors"
+                  >
                     <Users size={20} />
                     Accounts
                   </Button>
                 </Link>
                 <Link href="/settings" passHref>
-                  <Button variant="ghost" className="w-full justify-start gap-2">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2 text-zinc-600 hover:text-[#6C5CE7] hover:bg-[#6C5CE7]/10 transition-colors"
+                  >
                     <Settings size={20} />
                     Settings
                   </Button>
@@ -113,3 +137,4 @@ export function Sidebar({ className }: SidebarProps) {
     </div>
   )
 }
+

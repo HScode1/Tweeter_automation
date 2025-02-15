@@ -13,7 +13,9 @@ export default function DashboardLayout({
       >
       <div className="flex min-h-screen">
         <Sidebar className="w-64 border-r" />
-        <main className="flex-1 p-8">{children}</main>
+        <div className="flex-1">
+          {children}
+        </div>
       </div>
     </ClerkProvider>
   )

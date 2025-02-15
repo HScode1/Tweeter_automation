@@ -10,7 +10,11 @@
     "db:start": "docker compose up -d",
     "db:stop": "docker compose down",
     "db:reset": "docker compose down -v && docker compose up -d",
-    "db:logs": "docker compose logs postgres -f"
+    "db:logs": "docker compose logs postgres -f",
+    "migrate:dev": "dotenv -e .env.local -- npx prisma migrate dev",
+    "migrate:deploy": "dotenv -e .env.local -- npx prisma migrate deploy",
+    "generate": "dotenv -e .env.local -- npx prisma generate",
+    "studio": "dotenv -e .env.local -- npx prisma studio"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.11.1",
@@ -25,6 +29,7 @@
     "@radix-ui/react-separator": "^1.1.2",
     "@radix-ui/react-slot": "^1.1.2",
     "@radix-ui/react-tooltip": "^1.1.8",
+    "canvas": "^3.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.0.0",
@@ -44,6 +49,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv-cli": "^8.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.1.6",
     "postcss": "^8",

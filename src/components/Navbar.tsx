@@ -1,16 +1,16 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/components/ui/navigation-menu";
-import { motion } from "framer-motion";
-import { useUser, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+} from "@/components/ui/navigation-menu"
+import { motion } from "framer-motion"
+import { useUser, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs"
 
 export default function Navbar() {
-  const { isSignedIn } = useUser();
+  const { isSignedIn } = useUser()
 
   return (
     <motion.div
@@ -19,7 +19,7 @@ export default function Navbar() {
       transition={{ duration: 0.5 }}
       className="fixed top-0 left-0 right-0 flex justify-center p-4 z-50 backdrop-blur-sm"
     >
-      <header className="bg-white/80 shadow-lg w-full max-w-6xl rounded-full border border-gray-200/20">
+      <header className="bg-white/30 backdrop-blur-md shadow-lg w-full max-w-6xl rounded-full border border-[#6C5CE7]/30">
         <div className="px-6">
           <nav className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -27,11 +27,11 @@ export default function Navbar() {
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
-                className="w-8 h-8 bg-gradient-to-tr from-[#7C3AED] to-[#6D28D9] rounded-full"
+                className="w-8 h-8 bg-gradient-to-tr from-[#6C5CE7] to-[#8E7CF8] rounded-full shadow-md"
               />
             </Link>
 
-            {/* Liens de navigation */}
+            {/* Navigation links */}
             <NavigationMenu className="hidden md:flex">
               <NavigationMenuList className="flex space-x-1">
                 {["Solutions", "Benefits", "How it works", "Integrations", "Blog", "Pricing"].map((item) => (
@@ -40,7 +40,7 @@ export default function Navbar() {
                       <NavigationMenuLink>
                         <motion.span
                           whileHover={{ scale: 1.05 }}
-                          className="px-3 py-2 text-sm font-medium text-gray-700 rounded-full hover:bg-gray-100/80 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7C3AED] transition-all duration-200 inline-block"
+                          className="px-3 py-2 text-sm font-medium text-[#6C5CE7] rounded-full hover:bg-[#6C5CE7]/20 hover:text-[#8E7CF8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6C5CE7] transition-all duration-200 inline-block"
                         >
                           {item}
                         </motion.span>
@@ -51,20 +51,23 @@ export default function Navbar() {
               </NavigationMenuList>
             </NavigationMenu>
 
-            {/* Boutons CTA */}
+            {/* CTA Buttons */}
             <div className="flex items-center space-x-3">
               {!isSignedIn ? (
                 <>
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <SignInButton mode="modal"  fallbackRedirectUrl="/studio" signUpFallbackRedirectUrl="/studio">
-                      <Button variant="outline" className="hidden sm:inline-flex rounded-full border-[#7C3AED] text-[#7C3AED] hover:bg-[#7C3AED]/10">
+                    <SignInButton mode="modal" fallbackRedirectUrl="/studio" signUpFallbackRedirectUrl="/studio">
+                      <Button
+                        variant="outline"
+                        className="hidden sm:inline-flex rounded-full border-[#6C5CE7] text-[#6C5CE7] hover:bg-[#6C5CE7]/20 hover:text-[#8E7CF8]"
+                      >
                         Se connecter
                       </Button>
                     </SignInButton>
                   </motion.div>
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <SignUpButton  mode="modal" signInFallbackRedirectUrl="/studio" fallbackRedirectUrl="/studio">
-                      <Button className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-full shadow-lg shadow-[#7C3AED]/25">
+                    <SignUpButton mode="modal" signInFallbackRedirectUrl="/studio" fallbackRedirectUrl="/studio">
+                      <Button className="bg-[#6C5CE7] hover:bg-[#8E7CF8] text-white rounded-full shadow-lg shadow-[#6C5CE7]/40">
                         S'inscrire
                       </Button>
                     </SignUpButton>
@@ -85,5 +88,6 @@ export default function Navbar() {
         </div>
       </header>
     </motion.div>
-  );
+  )
 }
+
