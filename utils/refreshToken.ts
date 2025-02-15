@@ -1,5 +1,5 @@
 import { decrypt, encrypt } from './encryption';
-import { prisma } from '@/lib/prisma';
+import  prisma  from '@/lib/prisma';
 
 export async function refreshTwitterToken(userId: string) {
   try {

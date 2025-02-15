@@ -1,7 +1,7 @@
 import { ClerkProvider } from '@clerk/nextjs'
 import '../globals.css'
 import { Sidebar } from '@/components/sidebar'
-import { motion } from 'framer-motion'
+
 
 export default function DashboardLayout({
   children,

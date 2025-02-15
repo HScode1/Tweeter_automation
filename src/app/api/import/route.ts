@@ -1,4 +1,5 @@
-'use server'
+'use server';
+
 import { NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -9,7 +10,7 @@ import { createReadStream } from 'fs';
 
 const execAsync = promisify(exec);
 
-// Initialize OpenAI
+// Initialisation de l'API OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -29,31 +30,31 @@ export async function POST(req: Request) {
       );
     }
 
-    // Create temp directory if it doesn't exist
+    // Création du dossier temporaire s'il n'existe pas
     const tempDir = path.join(process.cwd(), 'tmp');
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir);
     }
     console.log('Dossier temporaire créé:', tempDir);
 
-    // Define file paths
+    // Définition des chemins des fichiers
     const videoId = Date.now().toString();
     const videoPath = path.join(tempDir, `${videoId}.mp4`);
     const audioPath = path.join(tempDir, `${videoId}.mp3`);
 
     try {
       console.log('Début du téléchargement de la vidéo');
-      // 1. Download video using yt-dlp
+      // Téléchargement de la vidéo avec yt-dlp
       await execAsync(`yt-dlp -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4" "${videoUrl}" -o "${videoPath}"`);
       console.log('Vidéo téléchargée');
 
       console.log('Début de l\'extraction audio');
-      // 2. Extract audio using FFmpeg
+      // Extraction de l'audio avec FFmpeg
       await execAsync(`ffmpeg -i "${videoPath}" -q:a 0 -map a "${audioPath}"`);
       console.log('Audio extrait');
 
       console.log('Début de la transcription');
-      // 3. Transcribe with OpenAI's Whisper API
+      // Transcription avec Whisper d'OpenAI
       const audioStream = createReadStream(audioPath);
       const transcription = await openai.audio.transcriptions.create({
         file: audioStream,
@@ -64,7 +65,7 @@ export async function POST(req: Request) {
       console.log('Contenu de la transcription complète:', transcription.text);
 
       console.log('Début de la génération des contenus');
-      // 4. Generate content with ChatGPT
+      // Génération de contenu avec ChatGPT
       const completion = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",
         messages: [
@@ -94,29 +95,43 @@ export async function POST(req: Request) {
 
       console.log('Contenus formatés:', results);
 
-      // Clean up temporary files
+      // Suppression des fichiers temporaires
       fs.unlinkSync(videoPath);
       fs.unlinkSync(audioPath);
       console.log('Fichiers temporaires nettoyés');
 
       return NextResponse.json({ results });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erreur pendant le traitement:', error);
-      // Clean up any remaining files
+
+      // Suppression des fichiers temporaires en cas d'erreur
       [videoPath, audioPath].forEach(file => {
         if (fs.existsSync(file)) {
           fs.unlinkSync(file);
         }
       });
-      throw error;
+
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      } else {
+        throw new Error("Une erreur inconnue est survenue.");
+      }
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Erreur générale:', error);
-    return NextResponse.json(
-      { error: "Erreur lors du traitement: " + error.message },
-      { status: 500 }
-    );
+
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: "Erreur lors du traitement: " + error.message },
+        { status: 500 }
+      );
+    } else {
+      return NextResponse.json(
+        { error: "Erreur inconnue lors du traitement" },
+        { status: 500 }
+      );
+    }
   }
 }

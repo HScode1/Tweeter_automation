@@ -1,6 +1,17 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { getSession } from 'next-auth/react';
+import { Session } from 'next-auth';
 import { encrypt } from '@/utils/encryption';
-import { prisma } from '@/lib/prisma'; // Assumant que vous utilisez Prisma
+import prisma from '@/lib/prisma';
+
+interface CustomSession extends Session {
+  user?: {
+    id?: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  }
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -11,12 +22,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const storedState = req.cookies.oauth_state;
 
   try {
-    // Vérifier le state
+    // Get the user session
+    const session = await getSession({ req }) as CustomSession;
+    
+    if (!session?.user?.id) {
+      throw new Error('User not authenticated');
+    }
+
+    // Verify the state
     if (!state || !storedState || state !== storedState) {
       throw new Error('Invalid state parameter');
     }
 
-    // Échanger le code contre un token
+    // Exchange code for token
     const tokenResponse = await fetch('https://api.twitter.com/2/oauth2/token', {
       method: 'POST',
       headers: {
@@ -38,30 +56,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const tokenData = await tokenResponse.json();
 
-    // Chiffrer et stocker les tokens
+    // Encrypt and store tokens
     const encryptedAccessToken = encrypt(tokenData.access_token);
     const encryptedRefreshToken = encrypt(tokenData.refresh_token);
 
-    // Stocker dans la base de données (exemple avec Prisma)
+    // Store in database
     await prisma.userToken.upsert({
-      where: { userId: req.session.userId }, // Assumant que vous avez un système d'authentification
+      where: { userId: session.user.id },  // Using the session user ID
       update: {
         accessToken: encryptedAccessToken,
         refreshToken: encryptedRefreshToken,
         expiresAt: new Date(Date.now() + tokenData.expires_in * 1000),
       },
       create: {
-        userId: req.session.userId,
+        userId: session.user.id,
         accessToken: encryptedAccessToken,
         refreshToken: encryptedRefreshToken,
         expiresAt: new Date(Date.now() + tokenData.expires_in * 1000),
       },
     });
 
-    // Rediriger vers la page de succès
+    // Redirect to success page
     res.redirect('/dashboard?auth=success');
   } catch (error) {
-    console.error('Erreur callback OAuth:', error);
+    console.error('OAuth callback error:', error);
     res.redirect('/dashboard?auth=error');
   }
 }

@@ -3,8 +3,9 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Label } from "@/components/ui/label";
+import Image from "next/image";
+
 
 const ImportationPage: React.FC = () => {
   const [videoUrl, setVideoUrl] = useState<string>("");
@@ -70,8 +71,12 @@ const ImportationPage: React.FC = () => {
       } else {
         setResults(data.results || []);
       }
-    } catch (err: any) {
-      setError(err.message || "Erreur lors du traitement");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message || "Erreur lors du traitement");
+      } else {
+        setError("Une erreur inconnue est survenue");
+      }
       setCurrentStep("idle");
       setProgress(0);
     } finally {
@@ -251,7 +256,7 @@ const ImportationPage: React.FC = () => {
                     <div key={label} className="space-y-2">
                       <Label>{label}</Label>
                       <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
-                        <img src={src || "/placeholder.svg"} alt={label} className="object-cover w-full h-full" />
+                        <Image src={src || "/placeholder.svg"} alt={label} className="object-cover w-full h-full" />
                         <Button
                           onClick={() => handleDownloadImage(src, filename)}
                           className="absolute bottom-4 right-4 bg-[#6C5CE7] hover:bg-[#6C5CE7]/90 text-white"

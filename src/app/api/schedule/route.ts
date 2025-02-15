@@ -4,7 +4,8 @@ import { auth } from "@clerk/nextjs/server"
 
 export async function POST(req: Request) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
+    
     if (!userId) return new NextResponse("Non autorisé", { status: 401 });
 
     const { content, scheduledFor } = await req.json();

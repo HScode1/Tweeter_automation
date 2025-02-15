@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs";
+import  prisma  from "@/lib/prisma";
+import { auth } from "@clerk/nextjs/server";
 
-export async function GET(req: Request) {
-  const { userId } = auth();
+export async function GET() {  // Ajoutez un underscore
+  const authData = await auth();
+  const { userId } = authData;
   if (!userId) return new NextResponse("Non autorisé", { status: 401 });
 
   try {

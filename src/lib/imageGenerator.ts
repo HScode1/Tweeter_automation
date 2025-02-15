@@ -1,4 +1,4 @@
-import { createCanvas, loadImage } from 'canvas';
+import { createCanvas } from 'canvas';
 
 interface GenerateImageOptions {
   width: number;

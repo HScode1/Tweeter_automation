@@ -1,55 +1,70 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { motion } from "framer-motion";
-import { useMemo } from "react";
+import Image from "next/image";
 
-const partners = {
+// Définition des types
+interface Partner {
+  name: string;
+  logo: string;
+  alt: string;
+  category: string;
+}
+
+interface PartnerSectionProps {
+  title: string;
+  description: string;
+  partners: Partner[];
+  delay?: number;
+}
+
+// Données des partenaires
+const partners: { payments: Partner[]; integrations: Partner[] } = {
   payments: [
     {
       name: "Stripe",
       logo: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg",
       alt: "Logo Stripe",
-      category: "payment"
+      category: "payment",
     },
     {
       name: "Visa",
       logo: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg",
       alt: "Logo Visa",
-      category: "payment"
+      category: "payment",
     },
     {
       name: "MasterCard",
       logo: "https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg",
       alt: "Logo MasterCard",
-      category: "payment"
-    }
+      category: "payment",
+    },
   ],
   integrations: [
     {
       name: "X (Twitter)",
       logo: "https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg",
       alt: "Logo X (Twitter)",
-      category: "integration"
+      category: "integration",
     },
     {
       name: "Google",
       logo: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
       alt: "Logo Google",
-      category: "integration"
+      category: "integration",
     },
     {
       name: "YouTube",
       logo: "https://upload.wikimedia.org/wikipedia/commons/4/42/YouTube_icon_%282013-2017%29.png",
       alt: "Logo YouTube",
-      category: "integration"
-    }
-  ]
+      category: "integration",
+    },
+  ],
 };
 
-
-
-const generatePatternStyles = (index) => {
-  const topBase = ((index * 17) % 100);
-  const leftBase = ((index * 23) % 100);
+// Génération des styles pour le fond animé
+const generatePatternStyles = (index: number): React.CSSProperties => {
+  const topBase = (index * 17) % 100;
+  const leftBase = (index * 23) % 100;
   const widthBase = 50 + ((index * 13) % 250);
   const heightBase = 50 + ((index * 19) % 250);
   const delayBase = (index * 0.1) % 2;
@@ -66,9 +81,15 @@ const generatePatternStyles = (index) => {
   };
 };
 
-const PartnerSection = ({ title, description, partners, delay = 0 }) => (
+// Section des partenaires
+const PartnerSection: React.FC<PartnerSectionProps> = ({
+  title,
+  description,
+  partners,
+  delay = 0,
+}) => (
   <div className="mb-24 last:mb-0">
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -89,10 +110,10 @@ const PartnerSection = ({ title, description, partners, delay = 0 }) => (
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ 
-            duration: 0.6, 
-            delay: delay + (index * 0.1),
-            ease: "easeOut"
+          transition={{
+            duration: 0.6,
+            delay: delay + index * 0.1,
+            ease: "easeOut",
           }}
           className="group relative"
         >
@@ -105,10 +126,12 @@ const PartnerSection = ({ title, description, partners, delay = 0 }) => (
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
               className="relative w-full h-full flex items-center justify-center"
             >
-              <img
+              <Image
                 src={partner.logo}
                 alt={partner.alt}
                 className="object-contain w-full h-12 filter dark:brightness-0 dark:invert transition-all duration-300 group-hover:scale-105"
+                width={150}
+                height={48}
               />
             </motion.div>
           </div>
@@ -118,23 +141,20 @@ const PartnerSection = ({ title, description, partners, delay = 0 }) => (
   </div>
 );
 
-const TrustSection = () => {
-  const patternStyles = useMemo(() => 
-    Array(20).fill(0).map((_, index) => generatePatternStyles(index)),
+// Section de confiance (Trust Section)
+const TrustSection: React.FC = () => {
+  const patternStyles = useMemo(
+    () => Array.from({ length: 20 }, (_, index) => generatePatternStyles(index)),
     []
   );
 
   return (
     <section className="relative py-32 px-4 overflow-hidden bg-gradient-to-b from-white via-gray-50/50 to-white dark:from-gray-900 dark:via-gray-800/50 dark:to-gray-900">
-      {/* Animated background pattern */}
+      {/* Fond animé */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute w-full h-full">
           {patternStyles.map((style, i) => (
-            <div
-              key={i}
-              className="absolute opacity-[0.15] dark:opacity-[0.05] animate-pulse"
-              style={style}
-            />
+            <div key={i} className="absolute opacity-[0.15] dark:opacity-[0.05] animate-pulse" style={style} />
           ))}
         </div>
       </div>
@@ -158,27 +178,13 @@ const TrustSection = () => {
               Nos Partenaires
             </span>
           </motion.div>
-          
-          <h2 className="text-4xl md:text-5xl font-bold mb-8 bg-gradient-to-r from-gray-900 via-gray-700 to-gray-800 dark:from-white dark:via-gray-200 dark:to-gray-300 bg-clip-text text-transparent">
+          <h2 className="text-4xl md:text-5xl font-bold mb-8 bg-gradient-to-r text-transparent">
             Solutions intégrées
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-lg md:text-xl leading-relaxed">
-            Une plateforme complète avec les meilleures intégrations pour optimiser votre présence en ligne
-          </p>
         </motion.div>
 
-        <PartnerSection 
-          title="Paiements sécurisés" 
-          description="Acceptez les paiements en toute sécurité avec les plus grands acteurs du marché"
-          partners={partners.payments} 
-        />
-        
-        <PartnerSection 
-          title="Intégrations" 
-          description="Connectez-vous aux plateformes les plus populaires pour maximiser votre impact"
-          partners={partners.integrations}
-          delay={0.3}
-        />
+        <PartnerSection title="Paiements sécurisés" description="Acceptez les paiements en toute sécurité." partners={partners.payments} />
+        <PartnerSection title="Intégrations" description="Connectez-vous aux meilleures plateformes." partners={partners.integrations} delay={0.3} />
       </div>
     </section>
   );

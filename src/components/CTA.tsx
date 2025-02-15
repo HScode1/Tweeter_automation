@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { FlickeringGrid } from "@/components/flickering-grid";
+import Image from "next/image";
 
 export function CTA() {
   return (
@@ -67,9 +68,11 @@ export function CTA() {
 
             {/* Image centrée */}
             <div className="relative w-full max-w-4xl mt-16">
-              <img
+              <Image
                 src="/saas_capture.png"
                 alt="Dashboard Preview"
+                width={1920}
+                height={1080}
                 className="w-full h-auto rounded-2xl shadow-2xl"
               />
             </div>

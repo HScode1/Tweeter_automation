@@ -2,10 +2,11 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent,CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Icons } from "@/components/icons";
+import Image from "next/image";
 
 interface ConnectedAccount {
   id: string;
@@ -182,7 +183,7 @@ export default function AccountsPage() {
             <CardContent>
               {account.isConnected ? (
                 <div className="flex items-center space-x-4">
-                  <img
+                  <Image
                     src={account.profileImage || "/placeholder.svg"}
                     alt={`${account.username} avatar`}
                     className="h-10 w-10 rounded-full"

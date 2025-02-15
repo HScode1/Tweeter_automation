@@ -26,7 +26,7 @@ const FAQ = ({ items }: FAQProps) => {
             Questions Fréquentes
           </h2>
           <p className="mt-4 text-lg text-gray-600">
-            Tout ce que vous devez savoir sur notre service d'automatisation de tweets
+            Tout ce que vous devez savoir sur notre service d&apos;automatisation de tweets
           </p>
         </div>
 

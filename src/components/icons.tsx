@@ -1,3 +1,4 @@
+import React from "react";
 import {
   TwitterIcon,
   InstagramIcon,
@@ -12,7 +13,7 @@ export const Icons = {
   youtube: YoutubeIcon,
   facebook: FacebookIcon,
   linkedin: LinkedinIcon,
-  pinterest: (props: any) => (
+  pinterest: (props: React.SVGProps<SVGSVGElement>) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
@@ -27,7 +28,7 @@ export const Icons = {
       <path d="M12 4v8" />
     </svg>
   ),
-  tiktok: (props: any) => (
+  tiktok: (props: React.SVGProps<SVGSVGElement>) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="24"
@@ -43,7 +44,7 @@ export const Icons = {
       <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
     </svg>
   ),
-  bluesky: (props: any) => (
+  bluesky: (props: React.SVGProps<SVGSVGElement>) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="24"
@@ -59,7 +60,7 @@ export const Icons = {
       <path d="M12 3L4 19h16L12 3z" />
     </svg>
   ),
-  threads: (props: any) => (
+  threads: (props: React.SVGProps<SVGSVGElement>) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="24"

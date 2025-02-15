@@ -1,4 +1,5 @@
-'use server'
+'use server';
+
 import { NextResponse } from "next/server";
 import { exec } from "child_process";
 import { promisify } from "util";
@@ -9,11 +10,15 @@ import { createReadStream } from "fs";
 import { generateImageWithText } from '@/lib/imageGenerator';
 
 const execAsync = promisify(exec);
-const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB in bytes
+const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB en octets
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+interface RequestBody {
+  videoUrl: string;
+}
 
 function extractYouTubeID(url: string): string | null {
   const regex = /(?:youtube\.com.*(?:\?|&)v=|youtu\.be\/)([^&\n?#]+)/;
@@ -25,16 +30,12 @@ async function splitAudio(inputPath: string, outputDir: string, segmentDuration:
   const segments: string[] = [];
   const baseFileName = path.basename(inputPath, '.mp3');
 
-  // Get audio duration
   const { stdout: durationStr } = await execAsync(
     `ffprobe -i "${inputPath}" -show_entries format=duration -v quiet -of csv="p=0"`
   );
   const duration = parseFloat(durationStr);
-
-  // Calculate number of segments needed
   const segmentCount = Math.ceil(duration / segmentDuration);
 
-  // Split the file into segments
   for (let i = 0; i < segmentCount; i++) {
     const start = i * segmentDuration;
     const outputPath = path.join(outputDir, `${baseFileName}_part${i}.mp3`);
@@ -43,7 +44,6 @@ async function splitAudio(inputPath: string, outputDir: string, segmentDuration:
       `ffmpeg -i "${inputPath}" -ss ${start} -t ${segmentDuration} -c copy "${outputPath}"`
     );
 
-    // Verify file size
     const stats = fs.statSync(outputPath);
     if (stats.size > MAX_FILE_SIZE) {
       throw new Error(`Segment size ${stats.size} exceeds maximum allowed size of ${MAX_FILE_SIZE}`);
@@ -65,7 +65,10 @@ async function transcribeAudio(segments: string[]): Promise<string> {
       model: "whisper-1",
       language: "fr",
     });
-    fullTranscription += transcription.text + ' ';
+
+    if (transcription.text) {
+      fullTranscription += transcription.text + ' ';
+    }
   }
 
   return fullTranscription.trim();
@@ -75,7 +78,9 @@ export async function POST(req: Request) {
   const tempFiles: string[] = [];
 
   try {
-    const { videoUrl } = await req.json();
+    const body: RequestBody = await req.json();
+    const { videoUrl } = body;
+
     if (!videoUrl) {
       return NextResponse.json({ error: "URL de la vidéo requise" }, { status: 400 });
     }
@@ -91,15 +96,12 @@ export async function POST(req: Request) {
 
     tempFiles.push(videoPath, audioPath);
 
-    // Download and extract audio
     await execAsync(`yt-dlp -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4" "${videoUrl}" -o "${videoPath}"`);
     await execAsync(`ffmpeg -i "${videoPath}" -q:a 0 -map a "${audioPath}"`);
 
-    // Split audio into segments if needed
     const audioSegments = await splitAudio(audioPath, tempDir);
     tempFiles.push(...audioSegments);
 
-    // Transcribe all segments
     const transcription = await transcribeAudio(audioSegments);
 
     const completion = await openai.chat.completions.create({
@@ -117,13 +119,12 @@ export async function POST(req: Request) {
       temperature: 0.7,
     });
 
-    const carouselText = completion.choices[0].message.content;
-    const results = carouselText?.split("\n").filter((line) => line.trim().length > 0) || [];
+    const carouselText = completion.choices[0]?.message?.content ?? "";
+    const results = carouselText.split("\n").filter(line => line.trim().length > 0);
 
     const ytID = extractYouTubeID(videoUrl);
     const thumbnail = ytID ? `https://img.youtube.com/vi/${ytID}/maxresdefault.jpg` : "";
 
-    // Generate summary image
     let summaryImage = "";
     try {
       summaryImage = await generateImageWithText({
@@ -136,10 +137,9 @@ export async function POST(req: Request) {
         padding: 60
       });
     } catch (error) {
-      console.error('Error generating summary image:', error);
+      console.error('Erreur lors de la génération de l’image:', error);
     }
 
-    // Cleanup
     tempFiles.forEach(file => {
       if (fs.existsSync(file)) {
         fs.unlinkSync(file);
@@ -147,16 +147,23 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ results, thumbnail, summaryImage });
-  } catch (error: any) {
-    // Cleanup on error
+
+  } catch (error: unknown) {
     tempFiles.forEach(file => {
       if (fs.existsSync(file)) {
         fs.unlinkSync(file);
       }
     });
 
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: "Erreur lors du traitement: " + error.message },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json(
-      { error: "Erreur lors du traitement: " + error.message },
+      { error: "Une erreur inconnue est survenue." },
       { status: 500 }
     );
   }

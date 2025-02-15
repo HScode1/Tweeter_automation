@@ -68,7 +68,7 @@ export default function Navbar() {
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <SignUpButton mode="modal" signInFallbackRedirectUrl="/studio" fallbackRedirectUrl="/studio">
                       <Button className="bg-[#6C5CE7] hover:bg-[#8E7CF8] text-white rounded-full shadow-lg shadow-[#6C5CE7]/40">
-                        S'inscrire
+                        S&apos;inscrire
                       </Button>
                     </SignUpButton>
                   </motion.div>

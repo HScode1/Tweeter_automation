@@ -1,4 +1,5 @@
-import Image from 'next/image'
+import Image from 'next/image';
+
 
 const testimonials = [
   {
@@ -8,7 +9,7 @@ const testimonials = [
     avatar: "/avatars/avatar-1.jpg"
   },
   {
-    content: "L'IA comprend parfaitement l'essence de mes vidéos et crée des tweets qui engagent vraiment ma communauté.",
+    content: "L&rsquo;IA comprend parfaitement l&rsquo;essence de mes vidéos et crée des tweets qui engagent vraiment ma communauté.",
     author: "Thomas Dubois",
     role: "YouTubeur Tech",
     avatar: "/avatars/avatar-2.jpg"
@@ -19,12 +20,11 @@ const testimonials = [
     role: "Blogueuse & Influenceuse",
     avatar: "/avatars/avatar-3.jpg"
   }
-]
+];
 
 export function Testimonials() {
   return (
     <section className="py-24 relative overflow-hidden">
-      {/* Background gradient et décoration */}
       <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-white opacity-70" />
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
       <div className="absolute left-0 right-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
@@ -35,7 +35,7 @@ export function Testimonials() {
             Témoignages
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Découvrez ce que nos utilisateurs disent de notre solution d'automatisation de tweets
+            Découvrez ce que nos utilisateurs disent de notre solution d&apos;automatisation de tweets
           </p>
         </div>
 
@@ -45,12 +45,10 @@ export function Testimonials() {
               key={index}
               className="group relative bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-100 hover:-translate-y-1"
             >
-              {/* Effet de gradient sur le hover */}
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-50 transition-opacity duration-300" />
               
               <div className="relative">
-                {/* Quote icon */}
-                <div className="absolute -top-4 -left-2 text-5xl text-blue-200 opacity-50">"</div>
+                <div className="absolute -top-4 -left-2 text-5xl text-blue-200 opacity-50">&quot;</div>
                 
                 <p className="text-gray-700 mb-6 relative z-10 leading-relaxed">
                   {testimonial.content}
