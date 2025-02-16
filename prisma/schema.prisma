@@ -1,3 +1,4 @@
+// schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -16,6 +17,7 @@ enum TweetStatus {
   PENDING
   PUBLISHED
   FAILED
+  SCHEDULED
 }
 
 enum MediaType {
@@ -32,10 +34,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
   accounts        Account[]
   scheduledTweets ScheduledTweet[]
-  userToken       UserToken? // ✅ Ajout de la relation avec UserToken
+  userToken       UserToken?
 
   @@index([email])
 }
@@ -44,12 +45,11 @@ model Account {
   id        String   @id @default(cuid())
   platform  String   @default("twitter")
   username  String
-  token     String // Will be encrypted
+  token     String
   userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, username])
@@ -57,17 +57,17 @@ model Account {
 }
 
 model ScheduledTweet {
-  id           String      @id @default(cuid())
-  content      String      @db.Text
+  id          String      @id @default(cuid())
+  content     String      @db.Text
   scheduledFor DateTime
-  status       TweetStatus @default(PENDING)
-  userId       String
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  retryCount   Int         @default(0)
-  errorMessage String?     @db.Text
+  status      TweetStatus @default(PENDING)
+  userId      String
+  tweetId     String?     // ID du tweet publié sur Twitter
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  retryCount  Int         @default(0)
+  errorMessage String?    @db.Text
 
-  // Relations
   user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   media   Media[]
   metrics TweetMetrics?
@@ -78,14 +78,13 @@ model ScheduledTweet {
 }
 
 model Media {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   tweetId   String
   url       String
   type      MediaType
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  // Relations
   tweet ScheduledTweet @relation(fields: [tweetId], references: [id], onDelete: Cascade)
 
   @@index([tweetId])
@@ -101,7 +100,6 @@ model TweetMetrics {
   replies     Int      @default(0)
   lastUpdated DateTime @default(now())
 
-  // Relations
   tweet ScheduledTweet @relation(fields: [tweetId], references: [id], onDelete: Cascade)
 
   @@index([tweetId])
@@ -115,7 +113,6 @@ model UserToken {
   expiresAt    DateTime
   createdAt    DateTime @default(now())
 
-  // Relation avec User
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
