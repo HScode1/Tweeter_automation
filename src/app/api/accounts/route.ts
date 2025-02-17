@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]/route';
-import { prisma } from '@/lib/prisma';
+import { authOptions } from '../auth/[...nextauth]/auth.config';
+import  prisma  from '@/lib/prisma';
 
 // Get connected accounts
 export async function GET() {
@@ -12,12 +12,13 @@ export async function GET() {
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: session.user?.email ?? '' },
       include: {
         accounts: {
           select: {
-            provider: true,
-            providerAccountId: true,
+            id: true,
+            platform: true,
+            username: true,
             createdAt: true,
           },
         },
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: session.user?.email ?? '' },
       include: { accounts: true },
     });
 
@@ -68,7 +69,7 @@ export async function POST(req: Request) {
     await prisma.account.deleteMany({
       where: {
         userId: user.id,
-        provider: 'twitter',
+        platform: 'twitter',
       },
     });
 

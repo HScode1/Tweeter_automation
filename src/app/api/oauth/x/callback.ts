@@ -3,13 +3,15 @@ import { getSession } from 'next-auth/react';
 import { Session } from 'next-auth';
 import { encrypt } from '@/utils/encryption';
 import prisma from '@/lib/prisma';
+import { Role } from '@prisma/client';
 
 interface CustomSession extends Session {
-  user?: {
-    id?: string;
+  user: {
+    id: string;
     name?: string | null;
     email?: string | null;
     image?: string | null;
+    role?: Role;
   }
 }
 

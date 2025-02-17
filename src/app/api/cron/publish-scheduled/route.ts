@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { TwitterApi } from 'twitter-api-v2';
+import { TwitterApi, TweetV2PostTweetResult } from 'twitter-api-v2';
+import type { SendTweetV2Params } from 'twitter-api-v2';
 import prisma from '@/lib/prisma';
 import { Account, Prisma } from '@prisma/client';
 
@@ -44,31 +45,55 @@ export async function GET() {
             accessSecret: twitterAccount.token,
           });
 
-          // Get media IDs from the media relation
-          const mediaIds = tweet.media?.map(m => m.url) || [];
+          // Get media URLs from the media relation
+          const mediaUrls = tweet.media?.map(m => m.url) || [];
 
-          // Préparer les paramètres du tweet
-          const tweetParams: any = {
+          // Prepare tweet parameters
+          const tweetParams: SendTweetV2Params = {
             text: tweet.content
           };
 
-          // Ajouter les médias si présents
-          if (mediaIds.length > 0) {
-            // Limiter à 4 médias et s'assurer que c'est un tuple valide
-            const validMediaIds = mediaIds.slice(0, 4);
-            if (validMediaIds.length === 1) {
-              tweetParams.media = { media_ids: [validMediaIds[0]] };
-            } else if (validMediaIds.length === 2) {
-              tweetParams.media = { media_ids: [validMediaIds[0], validMediaIds[1]] };
-            } else if (validMediaIds.length === 3) {
-              tweetParams.media = { media_ids: [validMediaIds[0], validMediaIds[1], validMediaIds[2]] };
-            } else if (validMediaIds.length === 4) {
-              tweetParams.media = { media_ids: [validMediaIds[0], validMediaIds[1], validMediaIds[2], validMediaIds[3]] };
+          // Upload and attach media if present
+          if (mediaUrls.length > 0) {
+            try {
+              // Limit to 4 media items
+              const validMediaUrls = mediaUrls.slice(0, 4);
+              
+              // Upload each media and get media IDs
+              const uploadedMediaIds = await Promise.all(
+                validMediaUrls.map(async (url) => {
+                  const mediaId = await client.v1.uploadMedia(url);
+                  return mediaId;
+                })
+              );
+
+              // Convert array to proper tuple based on length
+              switch (uploadedMediaIds.length) {
+                case 1:
+                  tweetParams.media = { media_ids: [uploadedMediaIds[0]] as [string] };
+                  break;
+                case 2:
+                  tweetParams.media = { media_ids: [uploadedMediaIds[0], uploadedMediaIds[1]] as [string, string] };
+                  break;
+                case 3:
+                  tweetParams.media = { 
+                    media_ids: [uploadedMediaIds[0], uploadedMediaIds[1], uploadedMediaIds[2]] as [string, string, string] 
+                  };
+                  break;
+                case 4:
+                  tweetParams.media = { 
+                    media_ids: [uploadedMediaIds[0], uploadedMediaIds[1], uploadedMediaIds[2], uploadedMediaIds[3]] as [string, string, string, string] 
+                  };
+                  break;
+              }
+            } catch (error) {
+              console.error('Error uploading media:', error);
+              // Continue with text-only tweet if media upload fails
             }
           }
 
-          // Publish tweet
-          const publishedTweet = await client.v2.tweet(tweetParams);
+          // Publish tweet using v2 endpoint
+          const publishedTweet: TweetV2PostTweetResult = await client.v2.tweet(tweetParams);
 
           // Update tweet status
           const updateData = {

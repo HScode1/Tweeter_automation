@@ -1,7 +1,7 @@
 // route.ts
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]/route';
+import { authOptions } from '../auth/[...nextauth]/auth.config';
 import prisma from '@/lib/prisma';
 import { TwitterApi } from 'twitter-api-v2';
 import { Prisma } from '@prisma/client';

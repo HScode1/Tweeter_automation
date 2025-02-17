@@ -1,115 +1,94 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../auth/[...nextauth]/route';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import prisma from '@/lib/prisma';
 
-// Get a specific scheduled tweet
+type Params = { id: string };
+
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+  request: NextRequest,
+  { params }: { params: Promise<Params> }
+): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
+    const resolvedParams = await params;
     const tweet = await prisma.scheduledTweet.findUnique({
-      where: {
-        id: params.id,
-        user: { email: session.user.email },
-      },
+      where: { id: resolvedParams.id, userId },
+      include: { user: true },
     });
-
     if (!tweet) {
       return NextResponse.json({ error: 'Tweet not found' }, { status: 404 });
     }
-
     return NextResponse.json(tweet);
   } catch (error) {
     console.error('Error fetching scheduled tweet:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch tweet' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch tweet' }, { status: 500 });
   }
 }
 
-// Update a scheduled tweet
 export async function PATCH(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+  request: NextRequest,
+  { params }: { params: Promise<Params> }
+): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const { content, scheduledFor, mediaIds } = await req.json();
-
+    const resolvedParams = await params;
+    const { content, scheduledFor, mediaIds, status } = await request.json();
+    if (mediaIds && !Array.isArray(mediaIds)) {
+      return NextResponse.json({ error: 'mediaIds must be an array' }, { status: 400 });
+    }
     const tweet = await prisma.scheduledTweet.findUnique({
-      where: {
-        id: params.id,
-        user: { email: session.user.email },
-      },
+      where: { id: resolvedParams.id, userId },
+      include: { user: true },
     });
-
     if (!tweet) {
       return NextResponse.json({ error: 'Tweet not found' }, { status: 404 });
     }
-
     const updatedTweet = await prisma.scheduledTweet.update({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       data: {
         content,
+        status,
         scheduledFor: scheduledFor ? new Date(scheduledFor) : undefined,
-        mediaIds,
+        media: {
+          connect: mediaIds ? mediaIds.map((id: string) => ({ id })) : undefined,
+        },
       },
+      include: { media: true },
     });
-
     return NextResponse.json(updatedTweet);
   } catch (error) {
     console.error('Error updating scheduled tweet:', error);
-    return NextResponse.json(
-      { error: 'Failed to update tweet' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update tweet' }, { status: 500 });
   }
 }
 
-// Delete a scheduled tweet
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+  request: NextRequest,
+  { params }: { params: Promise<Params> }
+): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
+    const resolvedParams = await params;
     const tweet = await prisma.scheduledTweet.findUnique({
-      where: {
-        id: params.id,
-        user: { email: session.user.email },
-      },
+      where: { id: resolvedParams.id, userId },
+      include: { user: true },
     });
-
     if (!tweet) {
       return NextResponse.json({ error: 'Tweet not found' }, { status: 404 });
     }
-
-    await prisma.scheduledTweet.delete({
-      where: { id: params.id },
-    });
-
+    await prisma.scheduledTweet.delete({ where: { id: resolvedParams.id } });
     return NextResponse.json({ message: 'Tweet deleted successfully' });
   } catch (error) {
     console.error('Error deleting scheduled tweet:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete tweet' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to delete tweet' }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]/route';
+import { authOptions } from '../auth/[...nextauth]/auth.config';
 import { TwitterApi } from 'twitter-api-v2';
 import prisma from '@/lib/prisma';
 import { MediaType } from '@prisma/client';
