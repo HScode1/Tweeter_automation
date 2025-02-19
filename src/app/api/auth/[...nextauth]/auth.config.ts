@@ -3,14 +3,14 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import prisma from "@/lib/prisma";
 import { AuthOptions } from "next-auth";
 import { Session, User as NextAuthUser } from "next-auth";
-import { Prisma } from "@prisma/client";
+import { Role } from "@prisma/client";
 import { AdapterUser } from "next-auth/adapters";
 
 declare module "next-auth" {
   interface Session {
     user: NextAuthUser & {
       id: string;
-      role?: Prisma.UserCreateInput['role'];
+      role?: Role;
     };
   }
 }
@@ -48,7 +48,7 @@ export const authOptions: AuthOptions = {
     }) {
       if (session.user) {
         session.user.id = user.id;
-        session.user.role = (user as unknown as Prisma.UserGetOutput<{}>).role;
+        session.user.role = (user as any).role;
       }
       return session;
     },
