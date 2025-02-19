@@ -3,8 +3,9 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import prisma from "@/lib/prisma";
 import { AuthOptions } from "next-auth";
 import { Session, User as NextAuthUser } from "next-auth";
-import { Role } from "@prisma/client";
 import { AdapterUser } from "next-auth/adapters";
+
+export type Role = 'USER' | 'ADMIN';
 
 declare module "next-auth" {
   interface Session {
