@@ -44,11 +44,11 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async session({ session, user }: { 
       session: Session; 
-      user: AdapterUser;
+      user: AdapterUser & { role?: Role };
     }) {
       if (session.user) {
         session.user.id = user.id;
-        session.user.role = (user as any).role;
+        session.user.role = user.role;
       }
       return session;
     },
