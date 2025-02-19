@@ -28,6 +28,7 @@ enum MediaType {
 
 model User {
   id        String   @id @default(cuid())
+  clerkId   String   @unique
   email     String   @unique
   name      String
   role      Role     @default(USER)
@@ -39,6 +40,7 @@ model User {
   userToken       UserToken?
 
   @@index([email])
+  @@index([clerkId])
 }
 
 model Account {

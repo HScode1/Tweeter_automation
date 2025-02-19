@@ -1,19 +1,25 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]/auth.config';
-import  prisma  from '@/lib/prisma';
+import { auth } from '@clerk/nextjs/server';
+import prisma from '@/lib/prisma';
 
-// Get connected accounts
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: session.user?.email ?? '' },
-      include: {
+      where: {
+        clerkId: userId,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
         accounts: {
           select: {
             id: true,
@@ -26,7 +32,8 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      // Si l'utilisateur n'existe pas encore, renvoyer un tableau vide
+      return NextResponse.json([]);
     }
 
     return NextResponse.json(user.accounts);
@@ -39,33 +46,34 @@ export async function GET() {
   }
 }
 
-// Disconnect Twitter account
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { action } = await req.json();
-    
+
     if (action !== 'disconnect') {
-      return NextResponse.json(
-        { error: 'Invalid action' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: session.user?.email ?? '' },
-      include: { accounts: true },
+      where: {
+        clerkId: userId,
+      },
+      select: {
+        id: true,
+        accounts: true,
+      },
     });
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Delete Twitter account
+    // Supprimer le compte Twitter
     await prisma.account.deleteMany({
       where: {
         userId: user.id,

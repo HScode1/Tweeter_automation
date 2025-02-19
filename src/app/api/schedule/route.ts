@@ -23,6 +23,7 @@ export async function POST(req: Request) {
       user = await prisma.user.create({
         data: {
           id: userId,
+          clerkId: userId,
           email: authData.sessionClaims?.email as string || '',
           name: authData.sessionClaims?.firstName as string || 'Unknown',
         }
