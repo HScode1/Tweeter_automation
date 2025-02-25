@@ -1,19 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from 'next-auth/react';
-import { Session } from 'next-auth';
+import { auth } from '@clerk/nextjs/server';
 import { encrypt } from '@/utils/encryption';
 import prisma from '@/lib/prisma';
-import { Role } from '@prisma/client';
-
-interface CustomSession extends Session {
-  user: {
-    id: string;
-    name?: string | null;
-    email?: string | null;
-    image?: string | null;
-    role?: Role;
-  }
-}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -24,26 +12,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const storedState = req.cookies.oauth_state;
 
   try {
-    // Get the user session
-    const session = await getSession({ req }) as CustomSession;
-    
-    if (!session?.user?.id) {
+    const { userId } = await auth();
+    if (!userId) {
       throw new Error('User not authenticated');
     }
 
-    // Verify the state
     if (!state || !storedState || state !== storedState) {
       throw new Error('Invalid state parameter');
     }
 
-    // Exchange code for token
     const tokenResponse = await fetch('https://api.twitter.com/2/oauth2/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization: `Basic ${Buffer.from(
-          `${process.env.TWITTER_CLIENT_ID}:${process.env.TWITTER_CLIENT_SECRET}`
-        ).toString('base64')}`,
+        Authorization: `Basic ${Buffer.from(`${process.env.TWITTER_CLIENT_ID}:${process.env.TWITTER_CLIENT_SECRET}`).toString('base64')}`,
       },
       body: new URLSearchParams({
         grant_type: 'authorization_code',
@@ -57,28 +39,49 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const tokenData = await tokenResponse.json();
+    const accessToken = tokenData.access_token;
 
-    // Encrypt and store tokens
+    const userResponse = await fetch('https://api.twitter.com/2/users/me', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!userResponse.ok) {
+      throw new Error('Failed to fetch user info');
+    }
+
+    const userData = await userResponse.json();
+    const twitterUsername = userData.data.username;
+
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+    if (!user) {
+      throw new Error('User not found in database');
+    }
+
     const encryptedAccessToken = encrypt(tokenData.access_token);
     const encryptedRefreshToken = encrypt(tokenData.refresh_token);
 
-    // Store in database
-    await prisma.userToken.upsert({
-      where: { userId: session.user.id },  // Using the session user ID
+    await prisma.account.upsert({
+      where: {
+        userId_platform: { userId: user.id, platform: 'twitter' },
+      },
       update: {
+        username: twitterUsername,
         accessToken: encryptedAccessToken,
         refreshToken: encryptedRefreshToken,
-        expiresAt: new Date(Date.now() + tokenData.expires_in * 1000),
+        tokenExpiresAt: new Date(Date.now() + tokenData.expires_in * 1000),
       },
       create: {
-        userId: session.user.id,
+        userId: user.id,
+        platform: 'twitter',
+        username: twitterUsername,
         accessToken: encryptedAccessToken,
         refreshToken: encryptedRefreshToken,
-        expiresAt: new Date(Date.now() + tokenData.expires_in * 1000),
+        tokenExpiresAt: new Date(Date.now() + tokenData.expires_in * 1000),
       },
     });
 
-    // Redirect to success page
     res.redirect('/dashboard?auth=success');
   } catch (error) {
     console.error('OAuth callback error:', error);

@@ -44,17 +44,19 @@ model User {
 }
 
 model Account {
-  id        String   @id @default(cuid())
-  platform  String   @default("twitter")
-  username  String
-  token     String
-  userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String    @id @default(cuid())
+  platform        String    @default("twitter")
+  username        String
+  accessToken     String
+  refreshToken    String?
+  tokenExpiresAt  DateTime?
+  userId          String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, username])
+  @@unique([userId, platform])
   @@index([userId])
 }
 

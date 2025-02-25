@@ -4,16 +4,10 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useClerk, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { Icons } from "@/components/icons";
 
-interface AccountData {
-  platform: string;
-  // Add other properties that might come from the API
-}
-
 export default function AccountsPage() {
-  const { openSignIn } = useClerk();
   const { user, isLoaded: isUserLoaded } = useUser();
   const [accounts, setAccounts] = useState<{ platform: string; isConnected: boolean }[]>([
     { platform: "twitter", isConnected: false },
@@ -21,49 +15,29 @@ export default function AccountsPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (isUserLoaded && user) {
-      fetchAccounts();
-    }
+    if (isUserLoaded && user) fetchAccounts();
   }, [isUserLoaded, user]);
 
   const fetchAccounts = async () => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       const response = await fetch("/api/accounts");
-      const data = await response.json();
-      
-      // Log pour déboguer
-      console.log("Données reçues de l'API:", data);
-
-      // Vérifier si data est un tableau
-      const accountsData = Array.isArray(data) ? data : [];
-      
+      const { accounts } = await response.json();
       setAccounts((prev) =>
         prev.map((acc) => ({
           ...acc,
-          isConnected: accountsData.some((d: AccountData) => d.platform === acc.platform),
+          isConnected: accounts.some((d: { platform: string }) => d.platform === acc.platform),
         }))
       );
     } catch (error) {
-      console.error("Erreur lors du chargement des comptes:", error);
+      console.error("Error fetching accounts:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleTwitterSignIn = async () => {
-    try {
-      await openSignIn({
-        redirectUrl: "/dashboard",
-        appearance: {
-          elements: {
-            socialButtonsBlockButton: "twitter",
-          },
-        },
-      });
-    } catch (error) {
-      console.error("Erreur lors de la connexion Twitter:", error);
-    }
+  const handleTwitterSignIn = () => {
+    window.location.href = '/api/oauth/x/redirect';
   };
 
   const handleDisconnect = async () => {
@@ -73,79 +47,63 @@ export default function AccountsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "disconnect" }),
       });
-
-      if (response.ok) {
-        await fetchAccounts();
-      }
+      if (response.ok) await fetchAccounts();
     } catch (error) {
-      console.error("Erreur lors de la déconnexion:", error);
+      console.error("Error disconnecting:", error);
     }
   };
 
   if (!isUserLoaded || isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#6C5CE7]"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen p-6">
-        <div className="max-w-7xl mx-auto">
-          <Card>
-            <CardContent className="p-6">
-              <h2 className="text-lg font-semibold mb-4">Connexion requise</h2>
-              <p className="text-gray-600 mb-4">
-                Vous devez être connecté pour gérer vos comptes sociaux.
-              </p>
-              <Button onClick={() => openSignIn()}>Se connecter</Button>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#8E7CF8]"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Comptes connectés</h1>
-          <p className="text-gray-600">Gérez vos comptes de réseaux sociaux</p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="min-h-screen p-8 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">
+          Connected Accounts
+        </h1>
+        <p className="text-gray-600 dark:text-gray-300 mb-8 text-lg">
+          Manage your social media connections with ease
+        </p>
+        <div className="grid gap-8 md:grid-cols-2">
           {accounts.map((account) => (
-            <Card key={account.platform}>
-              <CardHeader>
+            <Card 
+              key={account.platform} 
+              className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white dark:bg-gray-800 rounded-xl overflow-hidden"
+            >
+              <CardHeader className="border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-[#8E7CF8]/10 to-transparent">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    {account.platform === "twitter" && <Icons.twitter className="h-5 w-5" />}
-                    Twitter
+                  <CardTitle className="flex items-center gap-4 text-gray-900 dark:text-white">
+                    <Icons.twitter className="h-7 w-7 text-[#8E7CF8]" />
+                    <span className="text-xl font-semibold">Twitter</span>
                   </CardTitle>
                   {account.isConnected && (
-                    <Badge className="bg-green-100 text-green-800">Connecté</Badge>
+                    <Badge className="bg-[#8E7CF8]/20 text-[#8E7CF8] dark:bg-[#8E7CF8]/30 dark:text-white px-3 py-1 rounded-full font-medium">
+                      Connected
+                    </Badge>
                   )}
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6 px-6 pb-6">
                 {account.isConnected ? (
-                  <Button
-                    variant="destructive"
-                    onClick={handleDisconnect}
-                    className="w-full"
+                  <Button 
+                    variant="destructive" 
+                    onClick={handleDisconnect} 
+                    className="w-full bg-red-500 hover:bg-red-600 text-white transition-all duration-300 rounded-lg py-2 text-sm font-medium hover:scale-105"
                   >
-                    Déconnecter
+                    Disconnect Account
                   </Button>
                 ) : (
-                  <Button
-                    variant="default"
-                    onClick={handleTwitterSignIn}
-                    className="w-full"
+                  <Button 
+                    onClick={handleTwitterSignIn} 
+                    className="w-full bg-[#8E7CF8] hover:bg-[#8E7CF8]/90 text-white transition-all duration-300 rounded-lg py-2 text-sm font-medium hover:scale-105"
                   >
-                    Connecter avec Twitter
+                    Connect Twitter
                   </Button>
                 )}
               </CardContent>
@@ -155,4 +113,4 @@ export default function AccountsPage() {
       </div>
     </div>
   );
-}
+};

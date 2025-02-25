@@ -32,17 +32,22 @@ export async function GET() {
     });
 
     if (!user) {
-      // Si l'utilisateur n'existe pas encore, renvoyer un tableau vide
-      return NextResponse.json([]);
+      // If user doesn't exist, return an empty array
+      return NextResponse.json({ accounts: [] });
     }
 
-    return NextResponse.json(user.accounts);
+    return NextResponse.json({ accounts: user.accounts });
   } catch (error) {
+    console.log('Error type:', typeof error);
+    console.log('Error value:', error);
+    if (error instanceof Error) {
+      console.log('Error message:', error.message);
+      console.log('Error stack:', error.stack);
+    } else {
+      console.log('Non-Error exception caught:', error);
+    }
     console.error('Error fetching accounts:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch accounts' },
-      { status: 500 }
-    );
+    return NextResponse.json({ accounts: [], error: 'Failed to fetch accounts' }, { status: 500 });
   }
 }
 
@@ -73,7 +78,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Supprimer le compte Twitter
+    // Delete the Twitter account
     await prisma.account.deleteMany({
       where: {
         userId: user.id,
@@ -84,9 +89,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'Account disconnected successfully' });
   } catch (error) {
     console.error('Error disconnecting account:', error);
-    return NextResponse.json(
-      { error: 'Failed to disconnect account' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to disconnect account' }, { status: 500 });
   }
 }

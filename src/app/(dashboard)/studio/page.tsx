@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 
-
 const ImportationPage: React.FC = () => {
   const [videoUrl, setVideoUrl] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
@@ -102,23 +101,28 @@ const ImportationPage: React.FC = () => {
   };
 
   return (
-<div className="min-h-screen bg-gradient-to-b from-[#F8F7FF] to-white p-4">
-      <div className="space-y-6 max-w-7xl mx-auto">
-        <div className="flex justify-between items-center">
+    <div className="min-h-screen bg-gradient-to-br from-[#F8F7FF] to-white dark:from-gray-900 dark:to-gray-800 p-6">
+      <div className="max-w-5xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-[#6C5CE7] to-[#8E7CF8] bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-[#6C5CE7] to-[#8E7CF8] bg-clip-text text-transparent">
               Studio
             </h1>
-            <p className="text-zinc-500">Générez du contenu à partir de vos vidéos</p>
+            <p className="text-zinc-600 dark:text-zinc-400 text-lg mt-1">
+              Transformez vos vidéos en contenu engageant
+            </p>
           </div>
-          <div className="flex space-x-2">
+          <div className="flex flex-wrap gap-2">
             {["carrousel", "tweets", "threads"].map((type) => (
               <Button
                 key={type}
                 variant={contentType === type ? "default" : "outline"}
                 onClick={() => setContentType(type as typeof contentType)}
-                className={`w-32 ${
-                  contentType === type ? "bg-[#6C5CE7] hover:bg-[#6C5CE7]/90 text-white" : "hover:bg-[#6C5CE7]/10"
+                className={`w-32 rounded-full transition-all duration-300 ${
+                  contentType === type 
+                    ? "bg-[#6C5CE7] hover:bg-[#6C5CE7]/90 text-white" 
+                    : "border-[#6C5CE7]/50 text-[#6C5CE7] hover:bg-[#6C5CE7]/10"
                 }`}
               >
                 {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -127,52 +131,53 @@ const ImportationPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Main Content */}
         <div className="grid gap-6 md:grid-cols-2">
-          <Card className="border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-[#6C5CE7]">Source de la vidéo</CardTitle>
+          {/* Video Source Card */}
+          <Card className="border-0 shadow-lg rounded-xl bg-white dark:bg-gray-800 transition-all duration-300 hover:shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-[#6C5CE7]/10 to-transparent">
+              <CardTitle className="text-[#6C5CE7] text-xl font-semibold">Source de la vidéo</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6 p-6">
               <div className="space-y-2">
-                <Label>URL de la vidéo</Label>
+                <Label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">URL de la vidéo</Label>
                 <Input
                   placeholder="Collez l'URL de votre vidéo ici"
                   value={videoUrl}
                   onChange={(e) => setVideoUrl(e.target.value)}
                   disabled={isLoading || !!file}
-                  className="border-2 focus-visible:ring-[#6C5CE7] focus-visible:border-[#6C5CE7]"
+                  className="border-2 border-gray-200 dark:border-gray-700 focus-visible:ring-[#6C5CE7] focus-visible:border-[#6C5CE7] rounded-lg"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Ou déposez votre fichier</Label>
+                <Label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Ou déposez un fichier</Label>
                 <div
                   onDrop={handleFileDrop}
                   onDragOver={handleDragOver}
                   className={`
-                    border-2 border-dashed rounded-lg p-8
-                    ${isLoading ? "bg-gray-50 cursor-not-allowed" : "hover:border-[#6C5CE7] cursor-pointer"}
-                    ${file ? "border-[#6C5CE7] bg-[#6C5CE7]/5" : "border-gray-200"}
-                    transition-colors duration-200 text-center
+                    border-2 border-dashed rounded-lg p-8 text-center transition-all duration-300
+                    ${isLoading ? "bg-gray-100 dark:bg-gray-700 cursor-not-allowed" : "hover:border-[#6C5CE7] hover:bg-[#6C5CE7]/5 cursor-pointer"}
+                    ${file ? "border-[#6C5CE7] bg-[#6C5CE7]/10" : "border-gray-200 dark:border-gray-600"}
                   `}
                 >
                   {file ? (
                     <div className="text-[#6C5CE7]">
                       <p className="font-medium">{file.name}</p>
-                      <p className="text-sm">Fichier prêt à être importé</p>
+                      <p className="text-sm mt-1">Fichier prêt à être importé</p>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setFile(null)}
-                        className="mt-2 text-[#6C5CE7] hover:text-[#6C5CE7]/90 hover:bg-[#6C5CE7]/10"
+                        className="mt-2 text-[#6C5CE7] hover:text-[#6C5CE7]/90 hover:bg-[#6C5CE7]/20"
                         disabled={isLoading}
                       >
                         Supprimer
                       </Button>
                     </div>
                   ) : (
-                    <div className="text-zinc-500">
-                      <p>Glissez-déposez votre fichier ici</p>
-                      <p className="text-sm">ou cliquez pour sélectionner</p>
+                    <div className="text-zinc-500 dark:text-zinc-400">
+                      <p className="font-medium">Glissez-déposez ici</p>
+                      <p className="text-sm mt-1">ou cliquez pour sélectionner</p>
                     </div>
                   )}
                 </div>
@@ -180,20 +185,21 @@ const ImportationPage: React.FC = () => {
               <Button
                 onClick={handleImport}
                 disabled={isLoading || (!videoUrl && !file)}
-                className="w-full bg-[#6C5CE7] hover:bg-[#6C5CE7]/90 text-white"
+                className="w-full bg-[#6C5CE7] hover:bg-[#6C5CE7]/90 text-white rounded-lg py-2 transition-all duration-300 hover:scale-105"
               >
-                {isLoading ? "Importation en cours..." : "Importer"}
+                {isLoading ? "Importation en cours..." : "Lancer l'importation"}
               </Button>
-              {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
+              {error && <p className="text-sm text-red-500 text-center">{error}</p>}
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-[#6C5CE7]">Progression</CardTitle>
+          {/* Progress Card */}
+          <Card className="border-0 shadow-lg rounded-xl bg-white dark:bg-gray-800 transition-all duration-300 hover:shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-[#6C5CE7]/10 to-transparent">
+              <CardTitle className="text-[#6C5CE7] text-xl font-semibold">Progression</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+            <CardContent className="space-y-6 p-6">
+              <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-[#6C5CE7] transition-all duration-500 ease-out"
                   style={{ width: `${progress}%` }}
@@ -203,15 +209,15 @@ const ImportationPage: React.FC = () => {
                 {["downloading", "extracting", "transcribing", "generating"].map((step) => (
                   <div
                     key={step}
-                    className={`p-4 rounded-lg border ${
+                    className={`p-4 rounded-lg border transition-all duration-200 ${
                       currentStep === step
-                        ? "bg-[#6C5CE7]/10 border-[#6C5CE7]"
+                        ? "bg-[#6C5CE7]/10 border-[#6C5CE7] shadow-md"
                         : currentStep === "done" && progress === 100
                           ? "bg-green-50 border-green-500"
-                          : "bg-gray-50 border-gray-200"
+                          : "bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600"
                     }`}
                   >
-                    <p className="font-medium capitalize">
+                    <p className="font-medium text-zinc-800 dark:text-zinc-200 capitalize">
                       {
                         {
                           downloading: "Téléchargement",
@@ -221,7 +227,7 @@ const ImportationPage: React.FC = () => {
                         }[step]
                       }
                     </p>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
                       {currentStep === step
                         ? "En cours..."
                         : currentStep === "done" && progress === 100
@@ -235,52 +241,47 @@ const ImportationPage: React.FC = () => {
           </Card>
         </div>
 
+        {/* Results Section */}
         {results.length > 0 && (
-          <Card className="border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-[#6C5CE7]">Résultats</CardTitle>
+          <Card className="border-0 shadow-lg rounded-xl bg-white dark:bg-gray-800">
+            <CardHeader className="bg-gradient-to-r from-[#6C5CE7]/10 to-transparent">
+              <CardTitle className="text-[#6C5CE7] text-xl font-semibold">Résultats</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {contentType === "carrousel" &&
-                  thumbnail &&
-                  summaryImage &&
-                  [
+            <CardContent className="p-6 space-y-6">
+              {contentType === "carrousel" && thumbnail && summaryImage && (
+                <div className="grid gap-6 md:grid-cols-2">
+                  {[
                     { label: "Miniature", src: thumbnail, filename: "thumbnail.jpg" },
-                    {
-                      label: "Image de résumé",
-                      src: summaryImage,
-                      filename: "summary.jpg",
-                    },
+                    { label: "Image de résumé", src: summaryImage, filename: "summary.jpg" },
                   ].map(({ label, src, filename }) => (
                     <div key={label} className="space-y-2">
-                      <Label>{label}</Label>
-                      <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
-                        <Image src={src || "/placeholder.svg"} alt={label} className="object-cover w-full h-full" />
+                      <Label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{label}</Label>
+                      <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 shadow-md">
+                        <Image src={src || "/placeholder.svg"} alt={label} fill className="object-cover" />
                         <Button
                           onClick={() => handleDownloadImage(src, filename)}
-                          className="absolute bottom-4 right-4 bg-[#6C5CE7] hover:bg-[#6C5CE7]/90 text-white"
+                          className="absolute bottom-3 right-3 bg-[#6C5CE7] hover:bg-[#6C5CE7]/90 text-white rounded-full px-4 py-1 text-sm transition-all duration-300 hover:scale-105"
                         >
                           Télécharger
                         </Button>
                       </div>
                     </div>
                   ))}
-
-                <div className="space-y-2">
-                  <Label>Contenu généré</Label>
-                  <div className="space-y-2">
-                    {results.map((result, index) => (
-                      <Card
-                        key={index}
-                        className="border border-gray-100 hover:border-[#6C5CE7]/30 transition-colors duration-200"
-                      >
-                        <CardContent className="p-4">
-                          <p className="whitespace-pre-wrap">{result}</p>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Contenu généré</Label>
+                <div className="space-y-4">
+                  {results.map((result, index) => (
+                    <Card
+                      key={index}
+                      className="border border-gray-100 dark:border-gray-700 hover:border-[#6C5CE7]/50 bg-white dark:bg-gray-800 transition-all duration-200 rounded-lg"
+                    >
+                      <CardContent className="p-4">
+                        <p className="whitespace-pre-wrap text-zinc-800 dark:text-zinc-200">{result}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               </div>
             </CardContent>
@@ -288,7 +289,7 @@ const ImportationPage: React.FC = () => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ImportationPage
+export default ImportationPage;

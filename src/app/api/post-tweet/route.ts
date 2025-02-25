@@ -2,21 +2,22 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { TwitterApi } from 'twitter-api-v2';
 import prisma from '@/lib/prisma';
-import type { SendTweetV2Params } from 'twitter-api-v2';
+import { decrypt } from '@/utils/encryption';
 
-export async function POST(req: Request) {
+export async function POST(req) {
   try {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    const { content, mediaIds } = await req.json();
+    const { content } = await req.json();
 
     if (!content || typeof content !== 'string' || content.length > 280) {
       return NextResponse.json({ error: 'Contenu du tweet invalide' }, { status: 400 });
     }
 
+    // Get user from database
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
       include: { accounts: true },
@@ -32,24 +33,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Compte Twitter non connecté' }, { status: 400 });
     }
 
-    // Initialisation du client Twitter avec le token
-    const client = new TwitterApi(twitterAccount.token);
+    // Decrypt the access token
+    const accessToken = decrypt(twitterAccount.accessToken);
 
-    // Préparer les paramètres du tweet
-    const tweetParams: SendTweetV2Params = { text: content };
+    // Initialize Twitter client with the decrypted token
+    const client = new TwitterApi(accessToken);
 
-    // Ajouter les médias si présents
-    if (mediaIds && Array.isArray(mediaIds) && mediaIds.length > 0) {
-      const validMediaIds = mediaIds.slice(0, 4);
-      tweetParams.media = { 
-        media_ids: validMediaIds as [string] | [string, string] | [string, string, string] | [string, string, string, string] 
-      };
-    }
+    // Post the tweet
+    const tweet = await client.v2.tweet({ text: content });
 
-    // Publier le tweet
-    const tweet = await client.v2.tweet(tweetParams);
-
-    // Enregistrer le tweet dans la base de données
+    // Save the tweet in the database
     const savedTweet = await prisma.scheduledTweet.create({
       data: {
         content,
