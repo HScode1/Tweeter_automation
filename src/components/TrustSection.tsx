@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { motion } from "framer-motion";
+import React, { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
 // Définition des types
@@ -61,130 +61,268 @@ const partners: { payments: Partner[]; integrations: Partner[] } = {
   ],
 };
 
-// Génération des styles pour le fond animé
-const generatePatternStyles = (index: number): React.CSSProperties => {
-  const topBase = (index * 17) % 100;
-  const leftBase = (index * 23) % 100;
-  const widthBase = 50 + ((index * 13) % 250);
-  const heightBase = 50 + ((index * 19) % 250);
-  const delayBase = (index * 0.1) % 2;
-  const durationBase = 2 + (index % 3);
+// Composant de carte partenaire amélioré
+const PartnerCard: React.FC<{ partner: Partner; index: number; delay: number }> = ({
+  partner,
+  index,
+  delay,
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
 
-  return {
-    top: `${topBase}%`,
-    left: `${leftBase}%`,
-    width: `${widthBase}px`,
-    height: `${heightBase}px`,
-    background: `radial-gradient(circle, rgba(99,102,241,0.3) 0%, rgba(99,102,241,0) 70%)`,
-    animation: `pulse ${durationBase}s infinite`,
-    animationDelay: `${delayBase}s`,
-  };
+  return (
+    <motion.div
+      key={partner.name}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{
+        duration: 0.6,
+        delay: delay + index * 0.1,
+        ease: "easeOut",
+      }}
+      className="relative"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <motion.div
+        className="relative rounded-xl overflow-hidden bg-black/60 backdrop-blur-sm border border-purple-500/20 hover:border-[#a2d45e]/40 transition-all duration-300"
+        animate={{
+          y: isHovered ? -5 : 0,
+          boxShadow: isHovered 
+            ? "0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)"
+            : "0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1)",
+        }}
+        transition={{ duration: 0.3 }}
+      >
+        {/* Background gradients */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-in-out">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-[#a2d45e]/10" />
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-purple-400/20 via-transparent to-transparent" />
+        </div>
+
+        {/* Content */}
+        <div className="relative p-6 flex flex-col items-center">
+          <motion.div
+            animate={{ scale: isHovered ? 1.05 : 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="relative w-full h-16 flex items-center justify-center mb-4"
+          >
+            <Image
+              src={partner.logo}
+              alt={partner.alt}
+              className="object-contain max-h-12 w-auto brightness-0 invert"
+              width={150}
+              height={48}
+            />
+          </motion.div>
+          
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ 
+              opacity: isHovered ? 1 : 0,
+              height: isHovered ? "auto" : 0,
+            }}
+            transition={{ duration: 0.3 }}
+            className="text-center overflow-hidden"
+          >
+            <p className="text-sm font-medium text-[#a2d45e] mt-2">{partner.name}</p>
+          </motion.div>
+        </div>
+
+        {/* Bottom border gradient */}
+        <motion.div 
+          className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#a2d45e] to-purple-500"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: isHovered ? 1 : 0 }}
+          transition={{ duration: 0.4 }}
+          style={{ transformOrigin: "left" }}
+        />
+      </motion.div>
+    </motion.div>
+  );
 };
 
-// Section des partenaires
+// Section des partenaires modernisée
 const PartnerSection: React.FC<PartnerSectionProps> = ({
   title,
   description,
   partners,
   delay = 0,
-}) => (
-  <div className="mb-24 last:mb-0">
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, delay }}
-      className="text-center mb-12"
-    >
-      <h3 className="text-3xl font-bold mb-4 bg-gradient-to-r from-gray-900 via-gray-700 to-gray-800 dark:from-white dark:via-gray-200 dark:to-gray-300 bg-clip-text text-transparent">
-        {title}
-      </h3>
-      <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-        {description}
-      </p>
-    </motion.div>
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
-      {partners.map((partner, index) => (
-        <motion.div
-          key={partner.name}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{
-            duration: 0.6,
-            delay: delay + index * 0.1,
-            ease: "easeOut",
-          }}
-          className="group relative"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/80 to-purple-500/80 rounded-2xl opacity-0 group-hover:opacity-10 transition-all duration-500 ease-out" />
-          <div className="relative flex items-center justify-center p-8 bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg hover:shadow-xl backdrop-blur-sm border border-gray-100/50 dark:border-gray-700/30 transition-all duration-300 overflow-hidden group-hover:border-indigo-200 dark:group-hover:border-indigo-800/30">
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-50/50 via-purple-50/50 to-indigo-50/50 dark:from-indigo-900/20 dark:via-purple-900/20 dark:to-indigo-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-out" />
-            <div className="absolute inset-0 bg-grid-gray-800/[0.03] dark:bg-grid-white/[0.02]" />
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="relative w-full h-full flex items-center justify-center"
-            >
-              <Image
-                src={partner.logo}
-                alt={partner.alt}
-                className="object-contain w-full h-12 filter dark:brightness-0 dark:invert transition-all duration-300 group-hover:scale-105"
-                width={150}
-                height={48}
-              />
-            </motion.div>
-          </div>
-        </motion.div>
-      ))}
+}) => {
+  return (
+    <div className="mb-24 last:mb-0">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, delay }}
+        className="text-center mb-12"
+      >
+        <h3 className="text-3xl font-bold mb-4 bg-gradient-to-r from-[#a2d45e] via-white to-purple-400 bg-clip-text text-transparent">
+          {title}
+        </h3>
+        <p className="text-gray-300 max-w-2xl mx-auto">
+          {description}
+        </p>
+      </motion.div>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
+        {partners.map((partner, index) => (
+          <PartnerCard 
+            key={partner.name} 
+            partner={partner} 
+            index={index} 
+            delay={delay} 
+          />
+        ))}
+      </div>
     </div>
-  </div>
-);
-
-// Section de confiance (Trust Section)
-const TrustSection: React.FC = () => {
-  const patternStyles = useMemo(
-    () => Array.from({ length: 20 }, (_, index) => generatePatternStyles(index)),
-    []
   );
+};
+
+// Générer des particules pour l'arrière-plan
+const generateParticles = (count: number) => {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: 2 + Math.random() * 8,
+    opacity: 0.1 + Math.random() * 0.2,
+    duration: 15 + Math.random() * 30,
+    delay: Math.random() * 5,
+  }));
+};
+
+// Section de confiance (Trust Section) modernisée
+const TrustSection: React.FC = () => {
+  const particles = useMemo(() => generateParticles(30), []);
+  const [activeTab, setActiveTab] = useState<"payments" | "integrations">("payments");
 
   return (
-    <section className="relative py-32 px-4 overflow-hidden bg-gradient-to-b from-white via-gray-50/50 to-white dark:from-gray-900 dark:via-gray-800/50 dark:to-gray-900">
-      {/* Fond animé */}
+    <section className="relative py-24 px-4 overflow-hidden bg-gradient-to-b from-black to-gray-900 text-white">
+      {/* Decorative Blobs */}
+      <div className="absolute top-1/3 -left-32 w-64 h-64 rounded-full bg-purple-600 mix-blend-overlay filter blur-3xl opacity-20" />
+      <div className="absolute bottom-1/3 -right-32 w-64 h-64 rounded-full bg-[#a2d45e] mix-blend-overlay filter blur-3xl opacity-20" />
+      
+      {/* Top and bottom borders */}
+      <div className="absolute left-0 right-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
+      <div className="absolute left-0 right-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
+
+      {/* Particules d'arrière-plan */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute w-full h-full">
-          {patternStyles.map((style, i) => (
-            <div key={i} className="absolute opacity-[0.15] dark:opacity-[0.05] animate-pulse" style={style} />
-          ))}
-        </div>
+        {particles.map((particle) => (
+          <motion.div
+            key={particle.id}
+            className="absolute rounded-full bg-purple-500"
+            style={{
+              top: `${particle.y}%`,
+              left: `${particle.x}%`,
+              width: `${particle.size}px`,
+              height: `${particle.size}px`,
+              opacity: particle.opacity,
+            }}
+            animate={{
+              y: ["0%", "100%"],
+              x: [`${particle.x}%`, `${(particle.x + 10) % 100}%`],
+            }}
+            transition={{
+              duration: particle.duration,
+              delay: particle.delay,
+              repeat: Infinity,
+              repeatType: "reverse",
+              ease: "easeInOut",
+            }}
+          />
+        ))}
       </div>
 
-      <div className="max-w-7xl mx-auto relative">
+      <div className="max-w-6xl mx-auto relative">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-center mb-24"
+          className="text-center mb-16"
         >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="inline-block mb-6 px-6 py-2 rounded-full bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-50 dark:from-indigo-900/20 dark:via-purple-900/20 dark:to-indigo-900/20 border border-indigo-100/50 dark:border-indigo-800/30"
+          <div className="inline-block mb-4">
+            <div className="h-1 w-20 bg-gradient-to-r from-[#a2d45e] to-purple-500 rounded-full mx-auto mb-6" />
+          </div>
+          
+          <motion.h2 
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#a2d45e] via-white to-purple-400 mb-6 tracking-tight"
           >
-            <span className="text-indigo-600 dark:text-indigo-300 font-medium">
-              Nos Partenaires
-            </span>
-          </motion.div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-8 bg-gradient-to-r text-transparent">
-            Solutions intégrées
-          </h2>
+            Nos Partenaires
+          </motion.h2>
+          
+          <motion.p 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-gray-300 text-center mb-12 max-w-2xl mx-auto text-lg"
+          >
+            Découvrez nos partenaires de confiance qui nous aident à offrir la meilleure expérience possible.
+          </motion.p>
+          
+          <div className="h-1 w-20 bg-gradient-to-r from-purple-500 to-[#a2d45e] rounded-full mx-auto mt-6" />
         </motion.div>
 
-        <PartnerSection title="Paiements sécurisés" description="Acceptez les paiements en toute sécurité." partners={partners.payments} />
-        <PartnerSection title="Intégrations" description="Connectez-vous aux meilleures plateformes." partners={partners.integrations} delay={0.3} />
+        {/* Onglets modernes */}
+        <div className="flex justify-center mb-16">
+          <div className="inline-flex p-1 rounded-xl bg-black/80 border border-purple-500/20 backdrop-blur-sm">
+            <button
+              onClick={() => setActiveTab("payments")}
+              className={`px-6 py-3 rounded-lg font-medium text-sm transition-all ${
+                activeTab === "payments"
+                  ? "bg-gray-800 text-[#a2d45e] shadow-sm"
+                  : "text-gray-400 hover:text-[#a2d45e]"
+              }`}
+            >
+              Paiements
+            </button>
+            <button
+              onClick={() => setActiveTab("integrations")}
+              className={`px-6 py-3 rounded-lg font-medium text-sm transition-all ${
+                activeTab === "integrations"
+                  ? "bg-gray-800 text-[#a2d45e] shadow-sm"
+                  : "text-gray-400 hover:text-[#a2d45e]"
+              }`}
+            >
+              Intégrations
+            </button>
+          </div>
+        </div>
+
+        {/* Contenu des onglets */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            {activeTab === "payments" ? (
+              <PartnerSection 
+                title="Paiements sécurisés" 
+                description="Acceptez les paiements en toute sécurité avec nos partenaires de confiance." 
+                partners={partners.payments} 
+              />
+            ) : (
+              <PartnerSection 
+                title="Intégrations avancées" 
+                description="Connectez-vous aux meilleures plateformes pour étendre vos capacités." 
+                partners={partners.integrations} 
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
+        
+        {/* Bottom decorative element */}
+        <div className="mt-16 flex justify-center">
+          <div className="w-20 h-1 bg-gradient-to-r from-[#a2d45e] to-purple-500 rounded-full" />
+        </div>
       </div>
     </section>
   );

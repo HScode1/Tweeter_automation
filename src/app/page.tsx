@@ -7,6 +7,7 @@ import { Testimonials } from "@/components/Testimonials";
 import { SchemaSection } from "@/components/SchemaSection"; 
 import  TrustSection  from "@/components/TrustSection";
 import  StatsSection from "@/components/StatsSection"
+import Hero from "@/components/Hero";
 
 const faqItems = [
   {
@@ -31,9 +32,10 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <div className="min-h-screen bg-black ">
         <main className="container mx-auto px-4 py-16">
         </main>
+        <Hero />
         <TrustSection />
         <StatsSection />
         <SchemaSection />

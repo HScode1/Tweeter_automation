@@ -39,19 +39,45 @@ export default function TweetComposerPage() {
       return;
     }
 
+    // Add validation for schedule date and time
+    if (isScheduling && (!scheduleDate || !scheduleTime)) {
+      setMessage({ type: "error", text: "Veuillez sélectionner une date et une heure pour programmer le tweet." });
+      return;
+    }
+
     setIsLoading(true);
     setMessage(null);
 
     try {
       const endpoint = isScheduling ? "/api/schedule-tweet" : "/api/post-tweet";
+      
+      // Ensure scheduleDate is a valid Date object before formatting
+      let scheduledDateTime = null;
+      if (isScheduling && scheduleDate && scheduleTime) {
+        try {
+          scheduledDateTime = `${format(new Date(scheduleDate), "yyyy-MM-dd")}T${scheduleTime}:00`;
+        } catch (e) {
+          console.error("Erreur de formatage de date:", e);
+          setMessage({ type: "error", text: "Format de date invalide" });
+          setIsLoading(false);
+          return;
+        }
+      }
+
       const body = isScheduling
         ? {
             content: tweetContent,
-            scheduledAt: scheduleDate && scheduleTime 
-              ? `${format(scheduleDate, "yyyy-MM-dd")}T${scheduleTime}:00` 
-              : null,
+            scheduledAt: scheduledDateTime,
           }
         : { content: tweetContent };
+
+      console.log("Envoi de la requête:", {
+        endpoint,
+        body,
+        isScheduling,
+        scheduleDate,
+        scheduleTime
+      });
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -59,13 +85,25 @@ export default function TweetComposerPage() {
         body: JSON.stringify(body),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Erreur lors de la publication");
+      console.log("Statut de la réponse:", response.status);
+      
+      // Récupérer d'abord le texte brut de la réponse
+      const responseText = await response.text();
+      console.log("Réponse brute:", responseText);
+
+      // Essayer de parser la réponse en JSON
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (e) {
+        console.error("Erreur de parsing de la réponse:", e);
+        throw new Error("Réponse invalide du serveur");
       }
 
-      const result = await response.json();
-      
+      if (!response.ok) {
+        throw new Error(result.error || "Erreur lors de la publication");
+      }
+
       setMessage({
         type: "success",
         text: isScheduling ? "Tweet programmé avec succès !" : "Tweet publié avec succès !",
@@ -75,9 +113,9 @@ export default function TweetComposerPage() {
       setScheduleTime("");
       setIsScheduling(false);
       
-      // Refresh the page data if needed
       router.refresh();
     } catch (error) {
+      console.error("Détails de l'erreur:", error);
       setMessage({
         type: "error",
         text: error instanceof Error ? error.message : "Une erreur est survenue",

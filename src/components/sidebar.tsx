@@ -90,7 +90,7 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
                     Planifié
                   </Button>
                 </Link>
-                <Link href="/studio/posts" passHref>
+                <Link href="posts" passHref>
                   <Button
                     variant="ghost"
                     className="w-full justify-start gap-3 text-zinc-600 dark:text-zinc-300 hover:text-[#6C5CE7] hover:bg-[#6C5CE7]/10 rounded-lg transition-all duration-200 hover:pl-5"
