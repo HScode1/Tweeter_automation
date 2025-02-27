@@ -55,55 +55,55 @@ export default function AccountsPage() {
 
   if (!isUserLoaded || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#8E7CF8]"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-zinc-800 to-zinc-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#6C5CE7]"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-8 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-b from-zinc-800 via-zinc-800 to-zinc-900 p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">
-          Connected Accounts
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-[#6C5CE7] to-[#8E7CF8] bg-clip-text text-transparent mb-3 tracking-tight">
+          Comptes Connectés
         </h1>
-        <p className="text-gray-600 dark:text-gray-300 mb-8 text-lg">
-          Manage your social media connections with ease
+        <p className="text-zinc-200 mb-8 text-lg">
+          Gérez facilement vos connexions aux réseaux sociaux
         </p>
         <div className="grid gap-8 md:grid-cols-2">
           {accounts.map((account) => (
-            <Card 
-              key={account.platform} 
-              className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white dark:bg-gray-800 rounded-xl overflow-hidden"
+            <Card
+              key={account.platform}
+              className="border-0 shadow-lg rounded-xl bg-gradient-to-br from-zinc-700/90 to-zinc-800/90 backdrop-blur-sm transition-all duration-300 hover:shadow-xl overflow-hidden"
             >
-              <CardHeader className="border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-[#8E7CF8]/10 to-transparent">
+              <CardHeader className="border-b border-zinc-700/50 bg-gradient-to-r from-[#6C5CE7]/10 to-transparent">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-4 text-gray-900 dark:text-white">
-                    <Icons.twitter className="h-7 w-7 text-[#8E7CF8]" />
+                  <CardTitle className="flex items-center gap-4 text-zinc-200">
+                    <Icons.twitter className="h-7 w-7 text-[#6C5CE7]" />
                     <span className="text-xl font-semibold">Twitter</span>
                   </CardTitle>
                   {account.isConnected && (
-                    <Badge className="bg-[#8E7CF8]/20 text-[#8E7CF8] dark:bg-[#8E7CF8]/30 dark:text-white px-3 py-1 rounded-full font-medium">
-                      Connected
+                    <Badge className="bg-[#6C5CE7]/10 text-[#6C5CE7] border border-[#6C5CE7]/50 px-3 py-1 rounded-full font-medium">
+                      Connecté
                     </Badge>
                   )}
                 </div>
               </CardHeader>
               <CardContent className="pt-6 px-6 pb-6">
                 {account.isConnected ? (
-                  <Button 
-                    variant="destructive" 
-                    onClick={handleDisconnect} 
-                    className="w-full bg-red-500 hover:bg-red-600 text-white transition-all duration-300 rounded-lg py-2 text-sm font-medium hover:scale-105"
+                  <Button
+                    variant="destructive"
+                    onClick={handleDisconnect}
+                    className="w-full bg-red-500/90 hover:bg-red-600 text-white transition-all duration-300 rounded-lg py-2 text-sm font-medium hover:shadow-lg hover:shadow-red-500/20"
                   >
-                    Disconnect Account
+                    Déconnecter le compte
                   </Button>
                 ) : (
-                  <Button 
-                    onClick={handleTwitterSignIn} 
-                    className="w-full bg-[#8E7CF8] hover:bg-[#8E7CF8]/90 text-white transition-all duration-300 rounded-lg py-2 text-sm font-medium hover:scale-105"
+                  <Button
+                    onClick={handleTwitterSignIn}
+                    className="w-full bg-gradient-to-r from-[#6C5CE7] to-[#8E7CF8] hover:from-[#5D4ED6] hover:to-[#7D6DE7] text-white transition-all duration-300 rounded-lg py-2 text-sm font-medium hover:shadow-lg hover:shadow-[#6C5CE7]/20"
                   >
-                    Connect Twitter
+                    Connecter Twitter
                   </Button>
                 )}
               </CardContent>
@@ -113,4 +113,4 @@ export default function AccountsPage() {
       </div>
     </div>
   );
-};
+}

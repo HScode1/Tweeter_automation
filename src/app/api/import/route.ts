@@ -1,21 +1,16 @@
 'use server';
 
 import { NextResponse } from 'next/server';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import fs from 'fs';
-import path from 'path';
-import OpenAI from 'openai';
-import { createReadStream } from 'fs';
-
-const execAsync = promisify(exec);
-
-// Initialisation de l'API OpenAI
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { 
+  downloadVideoAndExtractAudio, 
+  transcribeAudio,
+  cleanupFiles
+} from '@/lib/fileUtils';
+import { generateContent } from '@/lib/contentGenerator';
 
 export async function POST(req: Request) {
+  const tempFiles: string[] = [];
+
   try {
     console.log('Début du traitement API');
     const { videoUrl, contentType } = await req.json();
@@ -30,87 +25,32 @@ export async function POST(req: Request) {
       );
     }
 
-    // Création du dossier temporaire s'il n'existe pas
-    const tempDir = path.join(process.cwd(), 'tmp');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir);
-    }
-    console.log('Dossier temporaire créé:', tempDir);
-
-    // Définition des chemins des fichiers
-    const videoId = Date.now().toString();
-    const videoPath = path.join(tempDir, `${videoId}.mp4`);
-    const audioPath = path.join(tempDir, `${videoId}.mp3`);
-
     try {
-      console.log('Début du téléchargement de la vidéo');
-      // Téléchargement de la vidéo avec yt-dlp
-      await execAsync(`yt-dlp -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4" "${videoUrl}" -o "${videoPath}"`);
-      console.log('Vidéo téléchargée');
-
-      console.log('Début de l\'extraction audio');
-      // Extraction de l'audio avec FFmpeg
-      await execAsync(`ffmpeg -i "${videoPath}" -q:a 0 -map a "${audioPath}"`);
-      console.log('Audio extrait');
+      console.log('Début du téléchargement et extraction');
+      // Téléchargement de la vidéo et extraction de l'audio
+      const { videoPath, audioPath } = await downloadVideoAndExtractAudio(videoUrl);
+      tempFiles.push(videoPath, audioPath);
+      console.log('Vidéo téléchargée et audio extrait');
 
       console.log('Début de la transcription');
       // Transcription avec Whisper d'OpenAI
-      const audioStream = createReadStream(audioPath);
-      const transcription = await openai.audio.transcriptions.create({
-        file: audioStream,
-        model: "whisper-1",
-        language: "fr",
-      });
+      const transcription = await transcribeAudio(audioPath);
       console.log('Transcription terminée');
-      console.log('Contenu de la transcription complète:', transcription.text);
+      console.log('Contenu de la transcription complète:', transcription);
 
       console.log('Début de la génération des contenus');
       // Génération de contenu avec ChatGPT
-      const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: contentType === "tweets"
-              ? "Tu es un expert en marketing digital. Ta tâche est de générer 3 tweets accrocheurs et viraux à partir d'une transcription vidéo."
-              : "Tu es un expert en marketing digital. Ta tâche est de générer un thread Twitter accrocheur et viral à partir d'une transcription vidéo. Le thread doit contenir entre 3 et 5 tweets."
-          },
-          {
-            role: "user",
-            content: `Voici la transcription d'une vidéo:\n\n${transcription.text}\n\n${
-              contentType === "tweets"
-                ? "Génère 3 tweets accrocheurs et viraux qui résument les points clés. Chaque tweet doit faire moins de 280 caractères. Format: un tweet par ligne."
-                : "Génère un thread Twitter accrocheur et viral qui résume les points clés. Le thread doit contenir entre 3 et 5 tweets. Format: un tweet par ligne."
-            }`
-          }
-        ],
-        temperature: 0.7,
+      const results = await generateContent({
+        transcription,
+        contentType: contentType === 'tweets' ? 'tweets' : 'thread'
       });
       console.log('Contenus générés');
-      console.log('Réponse brute de ChatGPT:', completion.choices[0].message.content);
-
-      const results = completion.choices[0].message.content
-        ?.split('\n')
-        .filter(line => line.length > 0);
-
       console.log('Contenus formatés:', results);
-
-      // Suppression des fichiers temporaires
-      fs.unlinkSync(videoPath);
-      fs.unlinkSync(audioPath);
-      console.log('Fichiers temporaires nettoyés');
 
       return NextResponse.json({ results });
 
     } catch (error: unknown) {
       console.error('Erreur pendant le traitement:', error);
-
-      // Suppression des fichiers temporaires en cas d'erreur
-      [videoPath, audioPath].forEach(file => {
-        if (fs.existsSync(file)) {
-          fs.unlinkSync(file);
-        }
-      });
 
       if (error instanceof Error) {
         throw new Error(error.message);
@@ -133,5 +73,9 @@ export async function POST(req: Request) {
         { status: 500 }
       );
     }
+  } finally {
+    // Nettoyage des fichiers temporaires dans tous les cas
+    cleanupFiles(tempFiles);
+    console.log('Fichiers temporaires nettoyés');
   }
 }

@@ -1,12 +1,12 @@
 "use client";
 
-import React, { forwardRef, useRef } from "react";
+import React, { forwardRef, useRef, memo } from "react";
 import { cn } from "@/lib/utils";
 import { AnimatedBeam } from "@/components/animated-beam";
 import { Youtube, Newspaper, Twitter, Wand2 } from "lucide-react";
 import { motion } from "framer-motion";
 
-const Square = forwardRef<
+const Square = memo(forwardRef<
   HTMLDivElement,
   { 
     className?: string; 
@@ -33,8 +33,9 @@ const Square = forwardRef<
         bgColor,
         className,
       )}
+      aria-label={label}
     >
-      <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-purple-900/20 to-[#a2d45e]/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-purple-900/20 to-[#a2d45e]/10 opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true" />
       <div className="relative z-10">
         {children}
       </div>
@@ -52,8 +53,11 @@ const Square = forwardRef<
       </div>
     )}
   </motion.div>
-));
+)));
 Square.displayName = "Square";
+
+// Memoized AnimatedBeam for performance
+const MemoizedAnimatedBeam = memo(AnimatedBeam);
 
 export function SchemaSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -63,18 +67,18 @@ export function SchemaSection() {
   const twitterRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="w-full py-24 px-4 overflow-hidden bg-gradient-to-b from-black to-gray-900 text-white relative">
+    <section className="w-full py-24 px-4 overflow-hidden bg-gradient-to-b from-black to-gray-900 text-white relative" aria-label="Comment ça marche">
       {/* Decorative Blobs */}
-      <div className="absolute top-1/3 -left-32 w-64 h-64 rounded-full bg-purple-600 mix-blend-overlay filter blur-3xl opacity-20" />
-      <div className="absolute bottom-1/3 -right-32 w-64 h-64 rounded-full bg-[#a2d45e] mix-blend-overlay filter blur-3xl opacity-20" />
+      <div className="absolute top-1/3 -left-32 w-64 h-64 rounded-full bg-purple-600 mix-blend-overlay filter blur-3xl opacity-20" aria-hidden="true" />
+      <div className="absolute bottom-1/3 -right-32 w-64 h-64 rounded-full bg-[#a2d45e] mix-blend-overlay filter blur-3xl opacity-20" aria-hidden="true" />
       
       {/* Top and bottom borders */}
-      <div className="absolute left-0 right-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
-      <div className="absolute left-0 right-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
+      <div className="absolute left-0 right-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" aria-hidden="true" />
+      <div className="absolute left-0 right-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" aria-hidden="true" />
 
       <div className="max-w-5xl mx-auto relative">
         <div className="max-w-3xl mx-auto text-center mb-16">
-          <div className="inline-block mb-4">
+          <div className="inline-block mb-4" aria-hidden="true">
             <div className="h-1 w-20 bg-gradient-to-r from-[#a2d45e] to-purple-500 rounded-full mx-auto mb-6" />
           </div>
           <motion.h1 
@@ -94,7 +98,7 @@ export function SchemaSection() {
             Transformez vos vidéos YouTube et articles de blog en tweets engageants automatiquement. 
             Notre IA analyse votre contenu et génère des publications Twitter optimisées pour maximiser votre impact.
           </motion.p>
-          <div className="h-1 w-20 bg-gradient-to-r from-purple-500 to-[#a2d45e] rounded-full mx-auto mt-6" />
+          <div className="h-1 w-20 bg-gradient-to-r from-purple-500 to-[#a2d45e] rounded-full mx-auto mt-6" aria-hidden="true" />
         </div>
 
         <motion.h2 
@@ -115,6 +119,7 @@ export function SchemaSection() {
             "shadow-2xl shadow-purple-500/5",
             "backdrop-blur-sm"
           )}
+          aria-label="Schéma d'automatisation"
         >
           <div className="flex flex-col gap-16 md:gap-20">
             <Square 
@@ -124,7 +129,7 @@ export function SchemaSection() {
               delay={0.4}
               bgColor="bg-[#333333]"
             >
-              <Newspaper className="w-8 h-8 text-[#a2d45e]" />
+              <Newspaper className="w-8 h-8 text-[#a2d45e]" aria-hidden="true" />
             </Square>
             <Square 
               ref={youtubeRef} 
@@ -133,7 +138,7 @@ export function SchemaSection() {
               delay={0.5}
               bgColor="bg-[#333333]"
             >
-              <Youtube className="w-8 h-8 text-red-500" />
+              <Youtube className="w-8 h-8 text-red-500" aria-hidden="true" />
             </Square>
           </div>
           
@@ -145,7 +150,7 @@ export function SchemaSection() {
             delay={0.6}
             bgColor="bg-[#4c2a80]"
           >
-            <Wand2 className="w-12 h-12 text-white" />
+            <Wand2 className="w-12 h-12 text-white" aria-hidden="true" />
           </Square>
           
           <Square 
@@ -155,24 +160,24 @@ export function SchemaSection() {
             delay={0.7}
             bgColor="bg-[#333333]"
           >
-            <Twitter className="w-8 h-8 text-blue-400" />
+            <Twitter className="w-8 h-8 text-blue-400" aria-hidden="true" />
           </Square>
 
-          <AnimatedBeam
+          <MemoizedAnimatedBeam
             containerRef={containerRef}
             fromRef={blogRef}
             toRef={toolRef}
             duration={3}
-            className="bg-gradient-to-r from-[#a2d45e]/30 to-purple-500/30  rounded-3xl"
+            className="bg-gradient-to-r from-[#a2d45e]/30 to-purple-500/30 rounded-3xl"
           />
-          <AnimatedBeam
+          <MemoizedAnimatedBeam
             containerRef={containerRef}
             fromRef={youtubeRef}
             toRef={toolRef}
             duration={3}
             className="bg-gradient-to-r from-red-500/30 to-purple-500/30 rounded-3xl"
           />
-          <AnimatedBeam
+          <MemoizedAnimatedBeam
             containerRef={containerRef}
             fromRef={toolRef}
             toRef={twitterRef}
@@ -181,16 +186,16 @@ export function SchemaSection() {
           />
 
           {/* Background decorative elements */}
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center" aria-hidden="true">
             <div className="h-[500px] w-[500px] rounded-full bg-purple-500/5 blur-3xl" />
           </div>
         </div>
         
         {/* Bottom decorative element */}
-        <div className="mt-12 flex justify-center">
+        <div className="mt-12 flex justify-center" aria-hidden="true">
           <div className="w-20 h-1 bg-gradient-to-r from-[#a2d45e] to-purple-500 rounded-full" />
         </div>
       </div>
-    </div>
+    </section>
   );
 }

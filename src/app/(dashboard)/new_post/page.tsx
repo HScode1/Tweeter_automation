@@ -39,7 +39,6 @@ export default function TweetComposerPage() {
       return;
     }
 
-    // Add validation for schedule date and time
     if (isScheduling && (!scheduleDate || !scheduleTime)) {
       setMessage({ type: "error", text: "Veuillez sélectionner une date et une heure pour programmer le tweet." });
       return;
@@ -51,7 +50,6 @@ export default function TweetComposerPage() {
     try {
       const endpoint = isScheduling ? "/api/schedule-tweet" : "/api/post-tweet";
       
-      // Ensure scheduleDate is a valid Date object before formatting
       let scheduledDateTime = null;
       if (isScheduling && scheduleDate && scheduleTime) {
         try {
@@ -65,19 +63,10 @@ export default function TweetComposerPage() {
       }
 
       const body = isScheduling
-        ? {
-            content: tweetContent,
-            scheduledAt: scheduledDateTime,
-          }
+        ? { content: tweetContent, scheduledAt: scheduledDateTime }
         : { content: tweetContent };
 
-      console.log("Envoi de la requête:", {
-        endpoint,
-        body,
-        isScheduling,
-        scheduleDate,
-        scheduleTime
-      });
+      console.log("Envoi de la requête:", { endpoint, body, isScheduling, scheduleDate, scheduleTime });
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -87,11 +76,9 @@ export default function TweetComposerPage() {
 
       console.log("Statut de la réponse:", response.status);
       
-      // Récupérer d'abord le texte brut de la réponse
       const responseText = await response.text();
       console.log("Réponse brute:", responseText);
 
-      // Essayer de parser la réponse en JSON
       let result;
       try {
         result = JSON.parse(responseText);
@@ -131,7 +118,7 @@ export default function TweetComposerPage() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F8F7FF] to-white">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-zinc-800 to-zinc-900">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#6C5CE7]"></div>
       </div>
     );
@@ -139,11 +126,11 @@ export default function TweetComposerPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F8F7FF] to-white">
-        <Card className="border-0 shadow-lg rounded-2xl">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-zinc-800 to-zinc-900">
+        <Card className="border-0 shadow-lg rounded-2xl bg-gradient-to-br from-zinc-700/90 to-zinc-800/90 backdrop-blur-sm">
           <CardContent className="p-6 text-center">
-            <p className="text-zinc-600 mb-4">Veuillez vous connecter pour publier un tweet.</p>
-            <Button className="bg-gradient-to-r from-[#6C5CE7] to-[#8E7CF8] hover:opacity-90 text-white rounded-full px-6 py-2 transition-all duration-300">
+            <p className="text-zinc-200 mb-4">Veuillez vous connecter pour publier un tweet.</p>
+            <Button className="bg-gradient-to-r from-[#6C5CE7] to-[#8E7CF8] hover:from-[#5D4ED6] hover:to-[#7D6DE7] text-white rounded-full px-6 py-2 transition-all duration-300 hover:shadow-lg hover:shadow-[#6C5CE7]/20">
               Se connecter
             </Button>
           </CardContent>
@@ -153,14 +140,14 @@ export default function TweetComposerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F8F7FF] to-white dark:from-gray-900 dark:to-gray-800 p-6">
+    <div className="min-h-screen bg-gradient-to-b from-zinc-800 via-zinc-800 to-zinc-900 p-6">
       <div className="max-w-3xl mx-auto space-y-8">
         <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-[#6C5CE7] to-[#8E7CF8] bg-clip-text text-transparent">
           Créer un Tweet
         </h1>
 
-        <Card className="border-0 shadow-lg rounded-2xl bg-white dark:bg-gray-800">
-          <CardHeader className="bg-gradient-to-r from-[#6C5CE7]/10 to-transparent rounded-t-2xl">
+        <Card className="border-0 shadow-lg rounded-2xl bg-gradient-to-br from-zinc-700/90 to-zinc-800/90 backdrop-blur-sm transition-all duration-300 hover:shadow-xl">
+          <CardHeader className="bg-gradient-to-r from-[#6C5CE7]/10 to-transparent rounded-t-2xl border-b border-zinc-700/50">
             <CardTitle className="text-[#6C5CE7] text-xl font-semibold">
               Composer votre tweet
             </CardTitle>
@@ -168,7 +155,7 @@ export default function TweetComposerPage() {
           <CardContent className="p-6 space-y-6">
             {/* Tweet Input */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <Label className="text-sm font-medium text-zinc-200">
                 Contenu du tweet
               </Label>
               <Textarea
@@ -176,37 +163,37 @@ export default function TweetComposerPage() {
                 value={tweetContent}
                 onChange={(e) => setTweetContent(e.target.value)}
                 disabled={isLoading}
-                className="min-h-[120px] border-2 border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 focus:ring-0 focus:border-[#6C5CE7] resize-none transition-colors duration-200"
+                className="min-h-[120px] border-2 border-zinc-600 rounded-xl bg-zinc-700/70 text-white focus:ring-0 focus:border-[#6C5CE7] resize-none transition-colors duration-200"
               />
               <div className="flex justify-between text-sm">
                 <span
                   className={cn(
-                    "text-zinc-500 dark:text-zinc-400",
-                    charCount > maxChars && "text-red-500"
+                    "text-zinc-300",
+                    charCount > maxChars && "text-red-400"
                   )}
                 >
                   {charCount}/{maxChars}
                 </span>
                 {charCount > maxChars && (
-                  <span className="text-red-500">Dépassement de la limite</span>
+                  <span className="text-red-400">Dépassement de la limite</span>
                 )}
               </div>
             </div>
 
             {/* Preview */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <Label className="text-sm font-medium text-zinc-200">
                 Aperçu
               </Label>
-              <Card className="border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+              <Card className="border border-zinc-600 bg-zinc-700/50 backdrop-blur-sm rounded-xl p-4 shadow-sm">
                 <div className="flex items-start space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600" />
+                  <div className="w-10 h-10 rounded-full bg-zinc-600" />
                   <div className="flex-1">
-                    <p className="font-semibold text-zinc-800 dark:text-zinc-200">
+                    <p className="font-semibold text-zinc-200">
                       {user.fullName || "Utilisateur"}
                     </p>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">@{user.username || "user"}</p>
-                    <p className="mt-1 text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap">
+                    <p className="text-sm text-zinc-300">@{user.username || "user"}</p>
+                    <p className="mt-1 text-zinc-200 whitespace-pre-wrap">
                       {tweetContent || "Votre tweet apparaîtra ici..."}
                     </p>
                   </div>
@@ -226,7 +213,7 @@ export default function TweetComposerPage() {
               {isScheduling && (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    <Label className="text-sm font-medium text-zinc-200">
                       Date
                     </Label>
                     <div className="relative">
@@ -234,21 +221,21 @@ export default function TweetComposerPage() {
                         type="date"
                         value={scheduleDate ? format(scheduleDate, "yyyy-MM-dd") : ""}
                         onChange={(e) => setScheduleDate(e.target.value ? new Date(e.target.value) : null)}
-                        className="border-2 border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 focus:ring-0 focus:border-[#6C5CE7] transition-colors duration-200"
+                        className="border-2 border-zinc-600 rounded-xl bg-zinc-700/70 text-white focus:ring-0 focus:border-[#6C5CE7] transition-colors duration-200"
                         disabled={isLoading}
                       />
-                      <CalendarIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-zinc-500" />
+                      <CalendarIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-zinc-300" />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    <Label className="text-sm font-medium text-zinc-200">
                       Heure
                     </Label>
                     <Input
                       type="time"
                       value={scheduleTime}
                       onChange={(e) => setScheduleTime(e.target.value)}
-                      className="border-2 border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 focus:ring-0 focus:border-[#6C5CE7] transition-colors duration-200"
+                      className="border-2 border-zinc-600 rounded-xl bg-zinc-700/70 text-white focus:ring-0 focus:border-[#6C5CE7] transition-colors duration-200"
                       disabled={isLoading}
                     />
                   </div>
@@ -261,7 +248,7 @@ export default function TweetComposerPage() {
               <Button
                 onClick={handlePublish}
                 disabled={isLoading || charCount > maxChars}
-                className="flex-1 bg-gradient-to-r from-[#6C5CE7] to-[#8E7CF8] hover:opacity-90 text-white rounded-full py-2 transition-all duration-300"
+                className="flex-1 bg-gradient-to-r from-[#6C5CE7] to-[#8E7CF8] hover:from-[#5D4ED6] hover:to-[#7D6DE7] text-white rounded-full py-2 transition-all duration-300 hover:shadow-lg hover:shadow-[#6C5CE7]/20"
               >
                 {isLoading
                   ? "En cours..."
@@ -284,7 +271,7 @@ export default function TweetComposerPage() {
               <p
                 className={cn(
                   "text-sm text-center",
-                  message.type === "success" ? "text-green-500" : "text-red-500"
+                  message.type === "success" ? "text-green-400" : "text-red-400"
                 )}
               >
                 {message.text}

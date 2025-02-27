@@ -38,6 +38,7 @@ model User {
   accounts        Account[]
   scheduledTweets ScheduledTweet[]
   userToken       UserToken?
+  preferences     UserPreferences?
 
   @@index([email])
   @@index([clerkId])
@@ -120,4 +121,15 @@ model UserToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model UserPreferences {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timezone     String?
+  tweetsPerPage Int    @default(10)
+  sortOrder    String  @default("chrono")
+  autoImport   Boolean @default(false)
+  importSource String?
 }

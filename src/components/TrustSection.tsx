@@ -1,4 +1,6 @@
-import React, { useMemo, useState } from "react";
+"use client";
+
+import React, { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
@@ -70,29 +72,16 @@ const PartnerCard: React.FC<{ partner: Partner; index: number; delay: number }> 
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <motion.div
+    <div
       key={partner.name}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{
-        duration: 0.6,
-        delay: delay + index * 0.1,
-        ease: "easeOut",
-      }}
       className="relative"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <motion.div
-        className="relative rounded-xl overflow-hidden bg-black/60 backdrop-blur-sm border border-purple-500/20 hover:border-[#a2d45e]/40 transition-all duration-300"
-        animate={{
-          y: isHovered ? -5 : 0,
-          boxShadow: isHovered 
-            ? "0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)"
-            : "0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1)",
-        }}
-        transition={{ duration: 0.3 }}
+      <div
+        className={`relative rounded-xl overflow-hidden bg-black/60 backdrop-blur-sm border border-purple-500/20 hover:border-[#a2d45e]/40 transition-all duration-300 ${
+          isHovered ? 'shadow-lg' : ''
+        }`}
       >
         {/* Background gradients */}
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-in-out">
@@ -102,9 +91,7 @@ const PartnerCard: React.FC<{ partner: Partner; index: number; delay: number }> 
 
         {/* Content */}
         <div className="relative p-6 flex flex-col items-center">
-          <motion.div
-            animate={{ scale: isHovered ? 1.05 : 1 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          <div
             className="relative w-full h-16 flex items-center justify-center mb-4"
           >
             <Image
@@ -113,32 +100,30 @@ const PartnerCard: React.FC<{ partner: Partner; index: number; delay: number }> 
               className="object-contain max-h-12 w-auto brightness-0 invert"
               width={150}
               height={48}
+              loading="lazy"
+              fetchPriority="low"
+              format="webp"
             />
-          </motion.div>
+          </div>
           
-          <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ 
-              opacity: isHovered ? 1 : 0,
-              height: isHovered ? "auto" : 0,
-            }}
-            transition={{ duration: 0.3 }}
-            className="text-center overflow-hidden"
+          <div 
+            className={`text-center overflow-hidden transition-all duration-300 ${
+              isHovered ? 'opacity-100 h-auto' : 'opacity-0 h-0'
+            }`}
           >
             <p className="text-sm font-medium text-[#a2d45e] mt-2">{partner.name}</p>
-          </motion.div>
+          </div>
         </div>
 
         {/* Bottom border gradient */}
-        <motion.div 
-          className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#a2d45e] to-purple-500"
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: isHovered ? 1 : 0 }}
-          transition={{ duration: 0.4 }}
+        <div 
+          className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#a2d45e] to-purple-500 transition-transform duration-300 ${
+            isHovered ? 'scale-x-100' : 'scale-x-0'
+          }`}
           style={{ transformOrigin: "left" }}
         />
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };
 
@@ -151,20 +136,14 @@ const PartnerSection: React.FC<PartnerSectionProps> = ({
 }) => {
   return (
     <div className="mb-24 last:mb-0">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5, delay }}
-        className="text-center mb-12"
-      >
+      <div className="text-center mb-12">
         <h3 className="text-3xl font-bold mb-4 bg-gradient-to-r from-[#a2d45e] via-white to-purple-400 bg-clip-text text-transparent">
           {title}
         </h3>
         <p className="text-gray-300 max-w-2xl mx-auto">
           {description}
         </p>
-      </motion.div>
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
         {partners.map((partner, index) => (
           <PartnerCard 
@@ -179,23 +158,37 @@ const PartnerSection: React.FC<PartnerSectionProps> = ({
   );
 };
 
-// Générer des particules pour l'arrière-plan
+// Générer des particules pour l'arrière-plan - réduit à 15 particules
 const generateParticles = (count: number) => {
   return Array.from({ length: count }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
     y: Math.random() * 100,
-    size: 2 + Math.random() * 8,
-    opacity: 0.1 + Math.random() * 0.2,
-    duration: 15 + Math.random() * 30,
+    size: 2 + Math.random() * 4, // Taille réduite
+    opacity: 0.1 + Math.random() * 0.1, // Opacité réduite
+    duration: 20 + Math.random() * 20, // Durée augmentée pour moins de calculs
     delay: Math.random() * 5,
   }));
 };
 
 // Section de confiance (Trust Section) modernisée
 const TrustSection: React.FC = () => {
-  const particles = useMemo(() => generateParticles(30), []);
+  const [particles, setParticles] = useState<Array<{
+    id: number;
+    x: number;
+    y: number;
+    size: number;
+    opacity: number;
+    duration: number;
+    delay: number;
+  }>>([]);
   const [activeTab, setActiveTab] = useState<"payments" | "integrations">("payments");
+  
+  // Only generate particles on the client side to avoid hydration mismatch
+  useEffect(() => {
+    // Réduit à 15 particules au lieu de 30
+    setParticles(generateParticles(15));
+  }, []);
 
   return (
     <section className="relative py-24 px-4 overflow-hidden bg-gradient-to-b from-black to-gray-900 text-white">
@@ -207,10 +200,10 @@ const TrustSection: React.FC = () => {
       <div className="absolute left-0 right-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
       <div className="absolute left-0 right-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
 
-      {/* Particules d'arrière-plan */}
+      {/* Particules d'arrière-plan - optimisées */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {particles.map((particle) => (
-          <motion.div
+          <div
             key={particle.id}
             className="absolute rounded-full bg-purple-500"
             style={{
@@ -219,54 +212,32 @@ const TrustSection: React.FC = () => {
               width: `${particle.size}px`,
               height: `${particle.size}px`,
               opacity: particle.opacity,
-            }}
-            animate={{
-              y: ["0%", "100%"],
-              x: [`${particle.x}%`, `${(particle.x + 10) % 100}%`],
-            }}
-            transition={{
-              duration: particle.duration,
-              delay: particle.delay,
-              repeat: Infinity,
-              repeatType: "reverse",
-              ease: "easeInOut",
+              transform: `translateY(${Math.sin(Date.now() / 1000) * 10}px)`,
             }}
           />
         ))}
       </div>
 
       <div className="max-w-6xl mx-auto relative">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-center mb-16"
-        >
+        <div className="text-center mb-16">
           <div className="inline-block mb-4">
             <div className="h-1 w-20 bg-gradient-to-r from-[#a2d45e] to-purple-500 rounded-full mx-auto mb-6" />
           </div>
           
-          <motion.h2 
-            initial={{ opacity: 0, y: -20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+          <h2 
             className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#a2d45e] via-white to-purple-400 mb-6 tracking-tight"
           >
             Nos Partenaires
-          </motion.h2>
+          </h2>
           
-          <motion.p 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+          <p 
             className="text-gray-300 text-center mb-12 max-w-2xl mx-auto text-lg"
           >
             Découvrez nos partenaires de confiance qui nous aident à offrir la meilleure expérience possible.
-          </motion.p>
+          </p>
           
           <div className="h-1 w-20 bg-gradient-to-r from-purple-500 to-[#a2d45e] rounded-full mx-auto mt-6" />
-        </motion.div>
+        </div>
 
         {/* Onglets modernes */}
         <div className="flex justify-center mb-16">
@@ -295,29 +266,21 @@ const TrustSection: React.FC = () => {
         </div>
 
         {/* Contenu des onglets */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            {activeTab === "payments" ? (
-              <PartnerSection 
-                title="Paiements sécurisés" 
-                description="Acceptez les paiements en toute sécurité avec nos partenaires de confiance." 
-                partners={partners.payments} 
-              />
-            ) : (
-              <PartnerSection 
-                title="Intégrations avancées" 
-                description="Connectez-vous aux meilleures plateformes pour étendre vos capacités." 
-                partners={partners.integrations} 
-              />
-            )}
-          </motion.div>
-        </AnimatePresence>
+        <div>
+          {activeTab === "payments" ? (
+            <PartnerSection 
+              title="Paiements sécurisés" 
+              description="Acceptez les paiements en toute sécurité avec nos partenaires de confiance." 
+              partners={partners.payments} 
+            />
+          ) : (
+            <PartnerSection 
+              title="Intégrations avancées" 
+              description="Connectez-vous aux meilleures plateformes pour étendre vos capacités." 
+              partners={partners.integrations} 
+            />
+          )}
+        </div>
         
         {/* Bottom decorative element */}
         <div className="mt-16 flex justify-center">

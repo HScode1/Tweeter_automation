@@ -30,30 +30,12 @@ const Hero = () => {
         {/* Animated background grid */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] z-0" />
         
-        {/* Decorative blobs */}
-        <motion.div 
+        {/* Decorative blobs - reduced animation complexity */}
+        <div 
           className="absolute -left-24 top-1/4 w-96 h-96 rounded-full bg-purple-600 opacity-10 blur-3xl"
-          animate={{ 
-            x: [0, 10, 0, -10, 0],
-            y: [0, -10, 0, 10, 0],
-          }}
-          transition={{ 
-            duration: 20, 
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
         />
-        <motion.div 
+        <div 
           className="absolute -right-24 bottom-1/4 w-96 h-96 rounded-full bg-[#a2d45e] opacity-10 blur-3xl"
-          animate={{ 
-            x: [0, -10, 0, 10, 0],
-            y: [0, 10, 0, -10, 0],
-          }}
-          transition={{ 
-            duration: 20, 
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
         />
       </div>
 
@@ -61,64 +43,45 @@ const Hero = () => {
         <div className="flex flex-col lg:flex-row items-center gap-16 pt-16">
           {/* Text Column */}
           <div className="flex-1 text-center lg:text-left">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+            <div
+              className="inline-flex items-center px-3 py-1 rounded-full bg-black/80 border border-purple-500/30 text-sm text-[#a2d45e] mb-6"
             >
-              <div className="inline-flex items-center px-3 py-1 rounded-full bg-black/80 border border-purple-500/30 text-sm text-[#a2d45e] mb-6">
-                <Zap className="w-4 h-4 mr-2" />
-                <span>Révolutionnez votre présence sur Twitter</span>
-              </div>
-            </motion.div>
+              <Zap className="w-4 h-4 mr-2" width={16} height={16} loading="lazy" decoding="async" />
+              <span>Révolutionnez votre présence sur Twitter</span>
+            </div>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+            <h1
               className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#a2d45e] via-white to-purple-400 tracking-tight"
             >
               Automatisez vos tweets, <br />
               <span className="text-white">amplifiez votre impact</span>
-            </motion.h1>
+            </h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
+            <p
               className="text-lg text-gray-300 mb-8 max-w-xl mx-auto lg:mx-0"
             >
               Transformez votre contenu existant en tweets engageants générés par IA. Boostez votre audience et restez actif sans effort avec notre solution d'automatisation intelligente.
-            </motion.p>
+            </p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
+            <div
               className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8"
             >
-              <motion.a
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              <a
                 href="#start"
                 className="bg-gradient-to-r from-[#a2d45e] to-purple-500 hover:from-[#a2d45e]/90 hover:to-purple-500/90 text-white font-semibold py-3 px-8 rounded-lg shadow-lg shadow-purple-500/20 flex items-center justify-center"
               >
                 Commencer maintenant
-                <ArrowRight className="ml-2 w-4 h-4" />
-              </motion.a>
+                <ArrowRight className="ml-2 w-4 h-4" width={16} height={16} loading="lazy" decoding="async" />
+              </a>
               <a
                 href="#demo"
                 className="bg-black/40 backdrop-blur-sm text-white border border-purple-500/30 hover:border-[#a2d45e]/40 font-semibold py-3 px-8 rounded-lg transition-all duration-300 flex items-center justify-center"
               >
                 Voir la démo
               </a>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-            >
+            <div>
               <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
                 {features.map((feature, index) => (
                   <div 
@@ -130,14 +93,11 @@ const Hero = () => {
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </div>
           </div>
 
           {/* Video/Image Column */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+          <div
             className="flex-1 w-full max-w-lg"
           >
             <div className="relative">
@@ -152,7 +112,7 @@ const Hero = () => {
                     {/* Image placeholder - replace with your video */}
                     <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
                       <div className="text-center p-8">
-                        <Twitter className="w-16 h-16 mx-auto mb-4 text-[#a2d45e]" />
+                        <Twitter className="w-16 h-16 mx-auto mb-4 text-[#a2d45e]" width={64} height={64} loading="lazy" decoding="async" />
                         <div className="text-xl font-semibold text-white mb-2">Visualisez notre solution</div>
                         <p className="text-gray-400">Cliquez pour regarder la démo</p>
                       </div>
@@ -160,13 +120,11 @@ const Hero = () => {
                     
                     {/* Play button overlay */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
+                      <button
                         className="w-16 h-16 rounded-full bg-[#a2d45e] flex items-center justify-center shadow-lg"
                       >
                         <div className="w-0 h-0 border-t-8 border-b-8 border-l-12 border-l-white border-t-transparent border-b-transparent ml-1"></div>
-                      </motion.button>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -200,7 +158,7 @@ const Hero = () => {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 
