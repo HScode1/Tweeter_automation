@@ -67,10 +67,11 @@ export function CTA() {
             <div className="relative w-full max-w-4xl mt-16">
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#a2d45e]/10 to-purple-500/10 blur-xl transform -translate-y-4" />
               <Image
-                src="/saas_capture.png"
+                src="/saas_capture.webp"
                 alt="Aperçu du Dashboard"
                 width={1920}
                 height={1080}
+                loading="lazy"
                 className="w-full h-auto rounded-2xl shadow-[0_8px_30px_rgba(163,0,255,0.2)] border border-purple-500/20"
               />
             </div>

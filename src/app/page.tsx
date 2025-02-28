@@ -1,13 +1,33 @@
 'use client'
 import { Footer } from "@/components/Footer"
 import Navbar from "@/components/Navbar";
-import FAQ from "@/components/FAQ";
-import { CTA } from "@/components/CTA";
-import { Testimonials } from "@/components/Testimonials";
 import { SchemaSection } from "@/components/SchemaSection"; 
-import  TrustSection  from "@/components/TrustSection";
-import  StatsSection from "@/components/StatsSection"
+import TrustSection from "@/components/TrustSection";
+import StatsSection from "@/components/StatsSection"
 import Hero from "@/components/Hero";
+import dynamic from 'next/dynamic';
+
+// Dynamically import heavy components
+const Testimonials = dynamic(() => import('@/components/Testimonials').then(mod => mod.Testimonials), { 
+  ssr: true,
+  loading: () => <div className="py-32 bg-gradient-to-b from-black to-gray-900 text-white flex justify-center items-center">
+    <div className="animate-pulse text-xl">Chargement des témoignages...</div>
+  </div>
+});
+
+const CTA = dynamic(() => import('@/components/CTA').then(mod => mod.CTA), { 
+  ssr: true,
+  loading: () => <div className="py-16 bg-black text-white flex justify-center items-center">
+    <div className="animate-pulse text-xl">Chargement...</div>
+  </div>
+});
+
+const FAQ = dynamic(() => import('@/components/FAQ').then(mod => mod.default), { 
+  ssr: true,
+  loading: () => <div className="py-16 bg-black text-white flex justify-center items-center">
+    <div className="animate-pulse text-xl">Chargement des FAQ...</div>
+  </div>
+});
 
 const faqItems = [
   {
