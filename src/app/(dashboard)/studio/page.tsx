@@ -5,6 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const ImportationPage: React.FC = () => {
   const [videoUrl, setVideoUrl] = useState<string>("");
@@ -17,6 +24,7 @@ const ImportationPage: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [contentType, setContentType] = useState<"tweets" | "threads" | "carrousel">("carrousel");
+  const [outputLanguage, setOutputLanguage] = useState<string>("fr");
 
   const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -46,7 +54,7 @@ const ImportationPage: React.FC = () => {
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ videoUrl, contentType }),
+        body: JSON.stringify({ videoUrl, contentType, outputLanguage }),
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -99,6 +107,15 @@ const ImportationPage: React.FC = () => {
       console.error('Erreur lors du téléchargement:', error);
     }
   };
+
+  const languages = [
+    { value: "fr", label: "Français" },
+    { value: "en", label: "Anglais" },
+    { value: "es", label: "Espagnol" },
+    { value: "de", label: "Allemand" },
+    { value: "it", label: "Italien" },
+    { value: "pt", label: "Portugais" }
+  ];
 
   return (
     <>
@@ -183,6 +200,25 @@ const ImportationPage: React.FC = () => {
                         </div>
                       )}
                     </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-zinc-200">Langue de sortie</Label>
+                    <Select 
+                      value={outputLanguage} 
+                      onValueChange={setOutputLanguage}
+                      disabled={isLoading}
+                    >
+                      <SelectTrigger className="border-2 border-zinc-600 focus:ring-[#6C5CE7] focus:border-[#6C5CE7] rounded-lg bg-zinc-700/70 text-white">
+                        <SelectValue placeholder="Sélectionnez une langue" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
+                        {languages.map(lang => (
+                          <SelectItem key={lang.value} value={lang.value} className="focus:bg-[#6C5CE7]/20 focus:text-white">
+                            {lang.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <Button
                     onClick={handleImport}
