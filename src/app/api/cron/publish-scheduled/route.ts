@@ -4,6 +4,49 @@ import type { SendTweetV2Params } from 'twitter-api-v2';
 import prisma from '@/lib/prisma';
 import { Account, Prisma } from '@prisma/client';
 
+// Helper function to fetch image data from URL
+async function fetchImageFromUrl(url: string): Promise<Buffer> {
+  console.log(`Fetching image from URL: ${url}`);
+  const response = await fetch(url);
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+  }
+  
+  const arrayBuffer = await response.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+}
+
+// Helper function to upload media to Twitter
+async function uploadMediaToTwitter(client: TwitterApi, url: string, index: number, total: number): Promise<string> {
+  console.log(`Uploading media ${index + 1}/${total}: ${url.substring(0, 30)}...`);
+  try {
+    // Fetch the image data from the URL
+    const imageBuffer = await fetchImageFromUrl(url);
+    console.log(`Successfully fetched image ${index + 1}, size: ${imageBuffer.length} bytes`);
+    
+    // Determine MIME type based on URL extension
+    let mimeType = 'image/jpeg'; // default
+    if (url.toLowerCase().endsWith('.png')) {
+      mimeType = 'image/png';
+    } else if (url.toLowerCase().endsWith('.gif')) {
+      mimeType = 'image/gif';
+    } else if (url.toLowerCase().endsWith('.mp4')) {
+      mimeType = 'video/mp4';
+    }
+    
+    console.log(`Uploading with MIME type: ${mimeType}`);
+    
+    // Upload the image data to Twitter
+    const mediaId = await client.v1.uploadMedia(imageBuffer, { mimeType });
+    console.log(`Successfully uploaded media ${index + 1}, got media ID: ${mediaId}`);
+    return mediaId;
+  } catch (error) {
+    console.error(`Error uploading media ${index + 1}:`, error);
+    throw new Error(`Error uploading media ${index + 1}: ${error.message || 'Unknown error'}`);
+  }
+}
+
 // This endpoint should be called by a cron job service (e.g., Vercel Cron)
 export async function GET() {
   try {
@@ -41,8 +84,8 @@ export async function GET() {
           const client = new TwitterApi({
             appKey: process.env.TWITTER_CLIENT_ID!,
             appSecret: process.env.TWITTER_CLIENT_SECRET!,
-            accessToken: twitterAccount.token,
-            accessSecret: twitterAccount.token,
+            accessToken: twitterAccount.accessToken,
+            accessSecret: twitterAccount.refreshToken || twitterAccount.accessToken,
           });
 
           // Get media URLs from the media relation
@@ -61,10 +104,7 @@ export async function GET() {
               
               // Upload each media and get media IDs
               const uploadedMediaIds = await Promise.all(
-                validMediaUrls.map(async (url) => {
-                  const mediaId = await client.v1.uploadMedia(url);
-                  return mediaId;
-                })
+                validMediaUrls.map((url, index) => uploadMediaToTwitter(client, url, index, validMediaUrls.length))
               );
 
               // Convert array to proper tuple based on length

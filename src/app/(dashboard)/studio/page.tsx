@@ -12,6 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { AlertCircle, Check, Loader2 } from "lucide-react";
 
 const ImportationPage: React.FC = () => {
   const [videoUrl, setVideoUrl] = useState<string>("");
@@ -25,6 +28,13 @@ const ImportationPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [contentType, setContentType] = useState<"tweets" | "threads" | "carrousel">("carrousel");
   const [outputLanguage, setOutputLanguage] = useState<string>("fr");
+  
+  // New state for tweet composition
+  const [tweetContent, setTweetContent] = useState<string>("");
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [isPublishing, setIsPublishing] = useState<boolean>(false);
+  const [publishError, setPublishError] = useState<string>("");
+  const MAX_TWEET_LENGTH = 280;
 
   const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -105,6 +115,76 @@ const ImportationPage: React.FC = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Erreur lors du téléchargement:', error);
+    }
+  };
+
+  // New function to handle tweet publication
+  const handlePublishTweet = async () => {
+    if (!tweetContent.trim()) {
+      setPublishError("Le contenu du tweet ne peut pas être vide");
+      return;
+    }
+
+    if (tweetContent.length > MAX_TWEET_LENGTH) {
+      setPublishError(`Le tweet ne peut pas dépasser ${MAX_TWEET_LENGTH} caractères`);
+      return;
+    }
+
+    setIsPublishing(true);
+    setPublishError("");
+
+    try {
+      const response = await fetch("/api/post-tweet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          content: tweetContent,
+          mediaUrls: selectedImages
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Erreur lors de la publication");
+      }
+
+      const data = await response.json();
+      
+      // Clear form after successful publication
+      setTweetContent("");
+      setSelectedImages([]);
+      
+      toast.success("Tweet publié avec succès", {
+        description: "Votre tweet a été publié sur Twitter"
+      });
+    } catch (err) {
+      if (err instanceof Error) {
+        setPublishError(err.message || "Erreur lors de la publication");
+      } else {
+        setPublishError("Une erreur inconnue est survenue");
+      }
+      
+      toast.error("Échec de la publication du tweet", {
+        description: publishError
+      });
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  // Function to toggle image selection for tweet
+  const toggleImageSelection = (imageUrl: string) => {
+    if (selectedImages.includes(imageUrl)) {
+      setSelectedImages(selectedImages.filter(url => url !== imageUrl));
+    } else {
+      // Twitter allows max 4 images per tweet
+      if (selectedImages.length < 4) {
+        setSelectedImages([...selectedImages, imageUrl]);
+      } else {
+        toast.warning("Limite atteinte", {
+          description: "Vous ne pouvez pas sélectionner plus de 4 images"
+        });
+      }
     }
   };
 
@@ -281,7 +361,7 @@ const ImportationPage: React.FC = () => {
 
             {/* Results Section */}
             {results.length > 0 && (
-              <Card className="border-0 shadow-lg rounded-xl bg-gradient-to-br from-zinc-700/90 to-zinc-800/90 backdrop-blur-sm">
+              <Card className="border-0 shadow-lg rounded-xl bg-gradient-to-br from-zinc-700/90 to-zinc-800/90 backdrop-blur-sm transition-all duration-300 hover:shadow-xl">
                 <CardHeader className="bg-gradient-to-r from-[#6C5CE7]/10 to-transparent border-b border-zinc-700/50">
                   <CardTitle className="text-[#6C5CE7] text-xl font-semibold">Résultats</CardTitle>
                 </CardHeader>
@@ -289,15 +369,23 @@ const ImportationPage: React.FC = () => {
                   {contentType === "carrousel" && thumbnail && summaryImage && (
                     <div className="grid gap-6 md:grid-cols-2">
                       {[
-                        { label: "Miniature", src: thumbnail, filename: "thumbnail.jpg" },
-                        { label: "Image de résumé", src: summaryImage, filename: "summary.jpg" },
-                      ].map(({ label, src, filename }) => (
-                        <div key={label} className="space-y-2">
-                          <Label className="text-sm font-medium text-zinc-200">{label}</Label>
-                          <div className="relative aspect-video rounded-lg overflow-hidden bg-zinc-700/70 shadow-md">
-                            <Image src={src || "/placeholder.svg"} alt={label} fill className="object-cover" />
+                        { label: "Miniature", url: thumbnail, fileName: "thumbnail.jpg" },
+                        { label: "Image de résumé", url: summaryImage, fileName: "summary.png" }
+                      ].map((item, index) => (
+                        <div key={index} className="relative rounded-lg overflow-hidden border border-zinc-600 hover:border-[#6C5CE7]/50 transition-all duration-200 group">
+                          <div className="aspect-video relative">
+                            <Image
+                              src={item.url}
+                              alt={item.label}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                          <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-between p-3">
+                            <span className="text-white font-medium">{item.label}</span>
                             <Button
-                              onClick={() => handleDownloadImage(src, filename)}
+                              onClick={() => handleDownloadImage(item.url, item.fileName)}
+                              size="sm"
                               className="absolute bottom-3 right-3 bg-gradient-to-r from-[#6C5CE7] to-[#8E7CF8] hover:from-[#5D4ED6] hover:to-[#7D6DE7] text-white rounded-full px-4 py-1 text-sm transition-all duration-300 hover:shadow-lg"
                             >
                               Télécharger
@@ -322,6 +410,89 @@ const ImportationPage: React.FC = () => {
                       ))}
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Tweet Publication Section */}
+            {results.length > 0 && (
+              <Card className="border-0 shadow-lg rounded-xl bg-gradient-to-br from-zinc-700/90 to-zinc-800/90 backdrop-blur-sm transition-all duration-300 hover:shadow-xl">
+                <CardHeader className="bg-gradient-to-r from-[#6C5CE7]/10 to-transparent border-b border-zinc-700/50">
+                  <CardTitle className="text-[#6C5CE7] text-xl font-semibold">Publier un Tweet</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6 space-y-6">
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <Label className="text-sm font-medium text-zinc-200">Contenu du tweet</Label>
+                      <span className={`text-xs ${tweetContent.length > MAX_TWEET_LENGTH ? 'text-red-400' : 'text-zinc-400'}`}>
+                        {tweetContent.length}/{MAX_TWEET_LENGTH}
+                      </span>
+                    </div>
+                    <Textarea
+                      placeholder="Composez votre tweet ici..."
+                      value={tweetContent}
+                      onChange={(e) => setTweetContent(e.target.value)}
+                      className="border-2 border-zinc-600 focus-visible:ring-[#6C5CE7] focus-visible:border-[#6C5CE7] rounded-lg bg-zinc-700/70 text-white min-h-[120px]"
+                      disabled={isPublishing}
+                    />
+                  </div>
+                  
+                  {/* Image Selection for Tweet */}
+                  {contentType === "carrousel" && thumbnail && summaryImage && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-zinc-200">Sélectionner des images (max 4)</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        {[thumbnail, summaryImage].map((imageUrl, index) => (
+                          <div 
+                            key={index}
+                            onClick={() => toggleImageSelection(imageUrl)}
+                            className={`
+                              relative rounded-lg overflow-hidden border-2 transition-all duration-200 cursor-pointer
+                              ${selectedImages.includes(imageUrl) 
+                                ? 'border-[#6C5CE7] ring-2 ring-[#6C5CE7]/50' 
+                                : 'border-zinc-600 hover:border-[#6C5CE7]/50'}
+                            `}
+                          >
+                            <div className="aspect-video relative">
+                              <Image
+                                src={imageUrl}
+                                alt={`Image ${index + 1}`}
+                                fill
+                                className="object-cover"
+                              />
+                              {selectedImages.includes(imageUrl) && (
+                                <div className="absolute top-2 right-2 bg-[#6C5CE7] rounded-full p-1">
+                                  <Check size={16} className="text-white" />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {publishError && (
+                    <div className="flex items-center gap-2 text-red-400 text-sm">
+                      <AlertCircle size={16} />
+                      <span>{publishError}</span>
+                    </div>
+                  )}
+                  
+                  <Button
+                    onClick={handlePublishTweet}
+                    disabled={isPublishing || tweetContent.length > MAX_TWEET_LENGTH}
+                    className="w-full bg-gradient-to-r from-[#6C5CE7] to-[#8E7CF8] hover:from-[#5D4ED6] hover:to-[#7D6DE7] text-white rounded-lg py-2 transition-all duration-300 hover:shadow-lg hover:shadow-[#6C5CE7]/20"
+                  >
+                    {isPublishing ? (
+                      <>
+                        <Loader2 size={16} className="mr-2 animate-spin" />
+                        Publication en cours...
+                      </>
+                    ) : (
+                      "Publier le tweet"
+                    )}
+                  </Button>
                 </CardContent>
               </Card>
             )}

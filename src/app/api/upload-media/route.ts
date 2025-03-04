@@ -8,6 +8,22 @@ import { MediaType } from '@prisma/client';
 const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4'];
 const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export async function POST(req: Request) {
   try {
     // Temporarily commented out for build
@@ -32,18 +48,9 @@ export async function POST(req: Request) {
     const twitterAccount = user.accounts.find(
       (account) => account.platform === 'twitter'
     );
-    if (!twitterAccount || !twitterAccount.token) {
+    if (!twitterAccount || !twitterAccount.accessToken) {
       return NextResponse.json(
         { error: 'Compte Twitter non connecté ou token invalide' },
-        { status: 400 }
-      );
-    }
-
-    // Parse the stored token to get access token and secret
-    const [accessToken, accessSecret] = twitterAccount.token.split('|');
-    if (!accessToken || !accessSecret) {
-      return NextResponse.json(
-        { error: 'Token Twitter invalide' },
         { status: 400 }
       );
     }
@@ -75,8 +82,10 @@ export async function POST(req: Request) {
 
     // Initialiser le client Twitter
     const client = new TwitterApi({
-      appKey: accessToken,
-      appSecret: accessSecret,
+      appKey: process.env.TWITTER_CLIENT_ID!,
+      appSecret: process.env.TWITTER_CLIENT_SECRET!,
+      accessToken: twitterAccount.accessToken,
+      accessSecret: twitterAccount.refreshToken || twitterAccount.accessToken,
     });
 
     // Envoyer le média sur Twitter

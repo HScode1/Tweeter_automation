@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
-import { encrypt } from '@/utils/encryption';
+import { encrypt, decrypt } from '@/utils/encryption';
 
 export async function GET(req) {
   const searchParams = req.nextUrl.searchParams;
