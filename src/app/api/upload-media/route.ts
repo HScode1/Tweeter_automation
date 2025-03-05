@@ -78,8 +78,11 @@ async function uploadMediaDirectly(accessToken: string, mediaBuffer: Buffer, mim
   const totalBytes = mediaBuffer.length;
   const mediaCategory = getMediaCategory(mimeType);
   console.log('La catégorie du Media renvoyéé par la fonction getMediaCategory est:', mediaCategory);
-  
+  console.log('Le type de Media renvoyée par la fonction est:', mimeType);
   console.log(`Starting direct media upload: type=${mimeType}, size=${totalBytes} bytes, category=${mediaCategory}`);
+  if (totalBytes < 5000) { // Exemple : taille minimale de 5 Ko
+    throw new Error('Le fichier est trop petit pour être uploadé sur Twitter');
+  }
   
   try {
     // STEP 1: INIT - Initialize the upload
@@ -90,7 +93,9 @@ async function uploadMediaDirectly(accessToken: string, mediaBuffer: Buffer, mim
     formDataInit.append('total_bytes', totalBytes.toString());
     formDataInit.append('media_type', mimeType);
     formDataInit.append('media_category', mediaCategory);
-    
+    console.log('INIT request body:', Object.fromEntries(formDataInit));
+
+
     const initResponse = await fetch('https://api.x.com/2/media/upload', {
       method: 'POST',
       headers: {
@@ -241,6 +246,8 @@ export async function POST(req: Request) {
         // Read the request body as a buffer
         const arrayBuffer = await req.arrayBuffer();
         mediaBuffer = Buffer.from(arrayBuffer);
+        console.log('Taille du buffer brut reçu:', arrayBuffer.byteLength);
+        console.log('Taille du Buffer après conversion:', mediaBuffer.length);
         
         // Extract filename from headers
         const contentDisposition = req.headers.get('content-disposition');
