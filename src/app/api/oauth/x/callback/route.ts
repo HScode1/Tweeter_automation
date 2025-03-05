@@ -64,7 +64,7 @@ export async function GET(req) {
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         code,
-        redirect_uri: `${process.env.NEXT_PUBLIC_BASE_URL}/api/oauth/x/callback`,
+        redirect_uri: encodeURI(`${process.env.NEXT_PUBLIC_BASE_URL}/api/oauth/x/callback`),
         code_verifier: codeVerifier,
       }),
     });
@@ -79,62 +79,106 @@ export async function GET(req) {
     const accessToken = tokenData.access_token;
     const refreshToken = tokenData.refresh_token;
 
-    // Fetch Twitter user info
-    const userResponse = await fetch('https://api.twitter.com/2/users/me', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-
-    if (!userResponse.ok) {
-      console.error('Failed to fetch user info');
-      return NextResponse.redirect(new URL('/accounts?error=user_info', req.url));
+    // Function to fetch user info with retry logic
+    async function fetchUserInfoWithRetry(token, maxRetries = 3, initialDelay = 1000) {
+      let lastError;
+      let retryCount = 0;
+      
+      while (retryCount < maxRetries) {
+        try {
+          const response = await fetch('https://api.twitter.com/2/users/me?user.fields=id,name,username', {
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+          });
+          
+          if (response.status === 429) {
+            // Rate limit hit
+            const retryAfterHeader = response.headers.get('retry-after');
+            const retryAfter = retryAfterHeader ? parseInt(retryAfterHeader, 10) * 1000 : initialDelay * Math.pow(2, retryCount);
+            
+            console.log(`Rate limited. Retrying after ${retryAfter}ms (Attempt ${retryCount + 1}/${maxRetries})`);
+            await new Promise(resolve => setTimeout(resolve, retryAfter));
+            retryCount++;
+            continue;
+          }
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Failed to fetch user info. Status: ${response.status}`);
+            console.error(`Response: ${errorText}`);
+            throw new Error(`Twitter API error: ${response.status}`);
+          }
+          
+          return await response.json();
+        } catch (error) {
+          lastError = error;
+          retryCount++;
+          
+          if (retryCount < maxRetries) {
+            const delay = initialDelay * Math.pow(2, retryCount - 1);
+            console.log(`Fetch attempt failed. Retrying in ${delay}ms (Attempt ${retryCount}/${maxRetries})`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
+        }
+      }
+      
+      throw lastError || new Error('Failed to fetch user info after multiple retries');
     }
 
-    const userData = await userResponse.json();
-    const twitterUserId = userData.data.id;
-    const twitterUsername = userData.data.username;
+    // Try to fetch user info with retries
+    try {
+      const userData = await fetchUserInfoWithRetry(accessToken);
+      const twitterUserId = userData.data.id;
+      const twitterUsername = userData.data.username;
+      
+      // Encrypt tokens for storage
+      const encryptedAccessToken = encrypt(accessToken);
+      const encryptedRefreshToken = encrypt(refreshToken);
 
-    // Encrypt tokens for storage
-    const encryptedAccessToken = encrypt(accessToken);
-    const encryptedRefreshToken = encrypt(refreshToken);
-
-    // Upsert the user with email
-    const dbUser = await prisma.user.upsert({
-      where: { clerkId: userId },
-      create: {
-        clerkId: userId,
-        email: email,
-        name: name,  // Add the user's name
-      },
-      update: {},  // No updates needed for existing user
-    });
-
-    // Upsert the Twitter account using the correct database userId
-    await prisma.account.upsert({
-      where: {
-        userId_platform: {
-          userId: dbUser.id,  // Use the database user ID (UUID)
-          platform: 'twitter',
+      // Upsert the user with email
+      const dbUser = await prisma.user.upsert({
+        where: { clerkId: userId },
+        create: {
+          clerkId: userId,
+          email: email,
+          name: name,  // Add the user's name
         },
-      },
-      create: {
-        userId: dbUser.id,
-        platform: 'twitter',
-        username: twitterUsername,
-        accessToken: encryptedAccessToken,
-        refreshToken: encryptedRefreshToken,
-      },
-      update: {
-        username: twitterUsername,
-        accessToken: encryptedAccessToken,
-        refreshToken: encryptedRefreshToken,
-      },
-    });
+        update: {},  // No updates needed for existing user
+      });
 
-    // Clear OAuth state and code verifier cookies
-    const response = NextResponse.redirect(new URL('/accounts', req.url));
-    response.cookies.delete('oauth_state');
-    response.cookies.delete('code_verifier');
-    return response;
+      // Upsert the Twitter account using the correct database userId
+      await prisma.account.upsert({
+        where: {
+          userId_platform: {
+            userId: dbUser.id,  // Use the database user ID (UUID)
+            platform: 'twitter',
+          },
+        },
+        create: {
+          userId: dbUser.id,
+          platform: 'twitter',
+          username: twitterUsername,
+          accessToken: encryptedAccessToken,
+          refreshToken: encryptedRefreshToken,
+        },
+        update: {
+          username: twitterUsername,
+          accessToken: encryptedAccessToken,
+          refreshToken: encryptedRefreshToken,
+        },
+      });
+
+      // Clear OAuth state and code verifier cookies
+      const response = NextResponse.redirect(new URL('/accounts', req.url));
+      response.cookies.delete('oauth_state');
+      response.cookies.delete('code_verifier');
+      return response;
+    } catch (error) {
+      console.error('Failed to fetch user info:', error);
+      return NextResponse.redirect(new URL('/accounts?error=user_info', req.url));
+    }
   } catch (error) {
     // Enhanced error logging
     console.log('Error type:', typeof error);

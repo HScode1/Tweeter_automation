@@ -6,6 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useUser } from "@clerk/nextjs";
 import { Icons } from "@/components/icons";
+import { useSearchParams } from "next/navigation";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle, Info } from "lucide-react";
 
 export default function AccountsPage() {
   const { user, isLoaded: isUserLoaded } = useUser();
@@ -13,6 +16,8 @@ export default function AccountsPage() {
     { platform: "twitter", isConnected: false },
   ]);
   const [isLoading, setIsLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const error = searchParams.get('error');
 
   useEffect(() => {
     if (isUserLoaded && user) fetchAccounts();
@@ -63,6 +68,22 @@ export default function AccountsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-zinc-800 via-zinc-800 to-zinc-900 p-8">
+      {error && (
+        <Alert variant={error === 'rate_limit' ? "destructive" : "default"} className="mb-8 max-w-4xl mx-auto">
+          {error === 'rate_limit' ? <AlertCircle className="h-4 w-4" /> : <Info className="h-4 w-4" />}
+          <AlertTitle>
+            {error === 'rate_limit' ? "Rate Limit Exceeded" : "Authentication Error"}
+          </AlertTitle>
+          <AlertDescription>
+            {error === 'rate_limit' 
+              ? "Twitter API rate limit exceeded. Please wait a minute before trying again."
+              : error === 'user_info'
+                ? "Failed to retrieve Twitter user information. This could be due to Twitter API rate limits. Please try again in a few minutes."
+                : `An error occurred during authentication: ${error}`
+            }
+          </AlertDescription>
+        </Alert>
+      )}
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-[#6C5CE7] to-[#8E7CF8] bg-clip-text text-transparent mb-3 tracking-tight">
           Comptes Connectés
