@@ -74,7 +74,7 @@ function getMediaCategory(mimeType: string): string {
 }
 
 // Direct implementation of X API media upload using fetch requests
-async function uploadMediaDirectly(accessToken: string, mediaBuffer: Buffer, mimeType: string): Promise<string> {
+export async function uploadMediaDirectly(accessToken: string, mediaBuffer: Buffer, mimeType: string): Promise<string> {
   const totalBytes = mediaBuffer.length;
   const mediaCategory = getMediaCategory(mimeType);
   console.log('La catégorie du Media renvoyéé par la fonction getMediaCategory est:', mediaCategory);
